@@ -154,7 +154,7 @@ abaculus.stitchTiles = function(coords, format, quality, getTile, callback){
         tiles = coords.tiles;
 
     getTiles = [].concat(getTile);
-    getTile.forEach(function(getTile) {
+    getTiles.forEach(function(getTile) {
         tiles.forEach(function (t) {
             tileQueue.defer(function (z, x, y, px, py, done) {
                 var cb = function (err, buffer, headers) {
