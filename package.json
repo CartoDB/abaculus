@@ -16,7 +16,7 @@
   "dependencies": {
     "queue-async": "1.0.7",
     "sphericalmercator": "1.0.x",
-    "mapnik": "https://github.com/CartoDB/node-mapnik/tarball/1.4.15-cdb"
+    "mapnik": "https://github.com/CartoDB/node-mapnik/tarball/1.4.15-cdb1"
   },
   "devDependencies":{
     "mocha": "1.x"
