@@ -157,11 +157,12 @@ abaculus.stitchTiles = function(coords, format, quality, getTile, callback){
     getTiles.forEach(function(getTile) {
         tiles.forEach(function (t) {
             tileQueue.defer(function (z, x, y, px, py, done) {
-                var cb = function (err, buffer, headers) {
+                var cb = function (err, buffer, headers, stats) {
                     if (err) return done(err);
                     done(err, {
                         buffer: buffer,
                         headers: headers,
+                        stats: stats || {},
                         x: px,
                         y: py,
                         reencode: true
@@ -184,6 +185,20 @@ abaculus.stitchTiles = function(coords, format, quality, getTile, callback){
             headers.push(d.headers);
         });
 
+        var numTiles = data.length;
+        var renderTotal = data
+            .map(function(d) {
+                return d.stats.render || 0;
+            })
+            .reduce(function(acc, renderTime) {
+                return acc + renderTime;
+            }, 0);
+
+        var stats = {
+            tiles: numTiles,
+            renderAvg: Math.round(renderTotal / numTiles)
+        };
+
         blend(data, {
             format: format,
             quality: quality,
@@ -192,7 +207,7 @@ abaculus.stitchTiles = function(coords, format, quality, getTile, callback){
             reencode: true
         }, function(err, buffer) {
             if (err) return callback(err);
-            callback(null, buffer, headerReduce(headers, format));
+            callback(null, buffer, headerReduce(headers, format), stats);
         });
     }
 
