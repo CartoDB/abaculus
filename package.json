@@ -1,6 +1,6 @@
 {
   "name": "abaculus",
-  "version": "1.1.0-cdb5",
+  "version": "1.1.0-cdb6",
   "description": "stitches map tiles together for high-res exporting from tm2",
   "main": "index.js",
   "engines": {
@@ -16,7 +16,7 @@
   "dependencies": {
     "queue-async": "1.0.7",
     "sphericalmercator": "1.0.x",
-    "mapnik": "https://github.com/CartoDB/node-mapnik/tarball/1.4.15-cdb8"
+    "mapnik": "cartodb/node-mapnik#1.4.15-cdb8"
   },
   "devDependencies":{
     "mocha": "1.x"
