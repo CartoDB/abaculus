@@ -1,6 +1,6 @@
 {
   "name": "abaculus",
-  "version": "2.0.3",
+  "version": "2.0.3-cdb1",
   "description": "stitches map tiles together for high-res exporting from tm2",
   "main": "index.js",
   "contributors": [
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "sphericalmercator": "1.0.x",
-    "mapnik": "~3.5.0",
+    "mapnik": "cartodb/node-mapnik#cdb-3.x",
     "d3-queue": "^2.0.2"
   },
   "devDependencies": {
