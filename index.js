@@ -155,28 +155,25 @@ abaculus.stitchTiles = function(coords, format, quality, getTile, callback) {
         s = coords.scale,
         tiles = coords.tiles;
 
-        getTiles = [].concat(getTile);
-        getTiles.forEach(function(getTile) {
-            tiles.forEach(function (t) {
-                tileQueue.defer(function (z, x, y, px, py, done) {
-                    var cb = function (err, buffer, headers, stats) {
-                    if (err) return done(err);
-                    done(err, {
-                        buffer: buffer,
-                        headers: headers,
-                        stats: stats || {},
-                        x: px,
-                        y: py,
-                        reencode: true
-                    })
-                };
-                cb.scale = s;
-                cb.format = format;
-                // getTile is a function that returns
-                // a tile given z, x, y, & callback
-                getTile(z, x, y, cb);
-            }, t.z, t.x, t.y, t.px, t.py);
-        });
+    tiles.forEach(function(t) {
+        tileQueue.defer(function(z, x, y, px, py, done) {
+            var cb = function(err, buffer, headers, stats) {
+                if (err) return done(err);
+                done(err, {
+                    buffer: buffer,
+                    headers: headers,
+                    stats: stats || {},
+                    x: px,
+                    y: py,
+                    reencode: true
+                })
+            };
+            cb.scale = s;
+            cb.format = format;
+            // getTile is a function that returns
+            // a tile given z, x, y, & callback
+            getTile(z, x, y, cb);
+        }, t.z, t.x, t.y, t.px, t.py);
     });
 
     function tileQueueFinish(err, data) {
