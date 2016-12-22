@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "sphericalmercator": "1.0.x",
-    "mapnik": "cartodb/node-mapnik#cdb-3.x",
+    "mapnik": "~3.5.0",
     "d3-queue": "^2.0.2"
   },
   "devDependencies": {
