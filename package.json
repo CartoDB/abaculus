@@ -15,8 +15,8 @@
   },
   "dependencies": {
     "@carto/mapnik": "3.6.2-carto.3",
-    "d3-queue": "3.0.7",
-    "sphericalmercator": "1.0.x"
+    "@mapbox/sphericalmercator": "1.0.5",
+    "d3-queue": "3.0.7"
   },
   "devDependencies": {
     "mocha": "2.x"
