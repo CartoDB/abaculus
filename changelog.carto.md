@@ -2,6 +2,7 @@
 
 * Update CI badges
 * Update @carto/mapnik to 3.6.2-carto.3
+* Update d3-queue to 3.0.7
 
 # 2.0.3-cdb2
 
