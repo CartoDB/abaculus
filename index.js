@@ -1,4 +1,4 @@
-var SphericalMercator = require('@mapbox/sphericalmercator');
+var SphericalMercator = require('sphericalmercator');
 var queue = require('d3-queue').queue;
 var blend = require('@carto/mapnik').blend;
 var crypto = require('crypto');
