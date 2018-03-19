@@ -1,3 +1,6 @@
+# 2.0.3-cdb6
+* Set @carto/mapnik to [`3.6.2-carto.6`](https://github.com/CartoDB/node-mapnik/blob/v3.6.2-carto/CHANGELOG.carto.md#362-carto5)
+
 # 2.0.3-cdb5
 * Set @carto/mapnik to `3.6.2-carto.4`, which includes improvements for the cache for raster symbols. See the [changelog](https://github.com/CartoDB/node-mapnik/blob/v3.6.2-carto/CHANGELOG.carto.md#362-carto4)
 
