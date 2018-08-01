@@ -1,6 +1,6 @@
 {
   "name": "abaculus",
-  "version": "2.0.3-cdb10",
+  "version": "2.0.3-cdb11",
   "description": "stitches map tiles together for high-res exporting from tm2",
   "main": "index.js",
   "contributors": [
@@ -14,8 +14,8 @@
     "url": "git@github.com:mapbox/abaculus.git"
   },
   "dependencies": {
-    "sphericalmercator": "1.0.x",
-    "@carto/mapnik": "3.6.2-carto.10",
+    "sphericalmercator": "1.0.5",
+    "@carto/mapnik": "3.6.2-carto.11",
     "d3-queue": "^2.0.2"
   },
   "devDependencies": {
