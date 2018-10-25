@@ -1,3 +1,5 @@
+'use strict';
+
 var assert = require('assert');
 var printer = require('../');
 var fs = require('fs');

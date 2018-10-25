@@ -1,5 +1,8 @@
 # abaculus changelog
 
+# 2.0.3-cdb12
+* Make all modules to use strict mode semantics.
+
 # 2.0.3-cdb11
 * Update @carto/mapnik to [`3.6.2-carto.11`](https://github.com/CartoDB/node-mapnik/blob/v3.6.2-carto.11/CHANGELOG.carto.md#362-carto11).
 

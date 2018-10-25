@@ -1,3 +1,5 @@
+'use strict';
+
 var SphericalMercator = require('sphericalmercator');
 var queue = require('d3-queue').queue;
 var blend = require('@carto/mapnik').blend;
