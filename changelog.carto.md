@@ -1,7 +1,8 @@
 # abaculus changelog
 
 # 2.0.3-cdb13
-
+* Support Node.js 10
+* Add package-lock.json
 
 # 2.0.3-cdb12
 * Make all modules to use strict mode semantics.
