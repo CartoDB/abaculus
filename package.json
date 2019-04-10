@@ -19,6 +19,6 @@
     "d3-queue": "^2.0.2"
   },
   "devDependencies": {
-    "mocha": "2.x"
+    "mocha": "6.x"
   }
 }
