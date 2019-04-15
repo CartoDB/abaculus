@@ -15,10 +15,10 @@
   },
   "dependencies": {
     "sphericalmercator": "1.0.5",
-    "@carto/mapnik": "3.6.2-carto.11",
+    "@carto/mapnik": "3.6.2-carto.13",
     "d3-queue": "^2.0.2"
   },
   "devDependencies": {
-    "mocha": "2.x"
+    "mocha": "6.x"
   }
 }
