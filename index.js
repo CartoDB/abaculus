@@ -10,17 +10,20 @@ module.exports = abaculus;
 function abaculus (arg, callback) {
     const z = arg.zoom || 0;
     const s = arg.scale || 1;
-    const bbox = arg.bbox || null;
     const getTile = arg.getTile || null;
     const format = arg.format || 'png';
     const quality = arg.quality || null;
     const limit = arg.limit || 19008;
     const tileSize = arg.tileSize || 256;
-
-    let center = arg.center || null;
+    const bbox = arg.bbox;
+    let center = arg.center;
 
     if (!getTile) {
         return callback(new Error('Invalid function for getting tiles'));
+    }
+
+    if (!center && !bbox) {
+        return callback(new Error('No coordinates provided.'));
     }
 
     if (center) {
@@ -29,9 +32,8 @@ function abaculus (arg, callback) {
     } else if (bbox) {
         // get center coordinates in px from [w,s,e,n] bbox
         center = abaculus.coordsFromBbox(z, s, bbox, limit, tileSize);
-    } else {
-        return callback(new Error('No coordinates provided.'));
     }
+
     // generate list of tile coordinates center
     const coords = abaculus.tileList(z, s, center, tileSize);
 
