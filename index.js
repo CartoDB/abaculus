@@ -8,8 +8,8 @@ const crypto = require('crypto');
 module.exports = abaculus;
 
 function abaculus (arg, callback) {
-    const z = arg.zoom || 0;
-    const s = arg.scale || 1;
+    const zoom = arg.zoom || 0;
+    const scale = arg.scale || 1;
     const getTile = arg.getTile || null;
     const format = arg.format || 'png';
     const quality = arg.quality || null;
@@ -28,24 +28,25 @@ function abaculus (arg, callback) {
 
     if (center) {
         // get center coordinates in px from lng,lat
-        center = abaculus.coordsFromCenter(z, s, center, limit, tileSize);
+        center = abaculus.coordsFromCenter(zoom, scale, center, limit, tileSize);
     } else if (bbox) {
         // get center coordinates in px from [w,s,e,n] bbox
-        center = abaculus.coordsFromBbox(z, s, bbox, limit, tileSize);
+        center = abaculus.coordsFromBbox(zoom, scale, bbox, limit, tileSize);
     }
 
     // generate list of tile coordinates center
-    const coords = abaculus.tileList(z, s, center, tileSize);
+    const coords = abaculus.tileList(zoom, scale, center, tileSize);
 
     // get tiles based on coordinate list and stitch them together
     abaculus.stitchTiles(coords, format, quality, getTile, callback);
 }
 
 abaculus.coordsFromBbox = function (z, s, bbox, limit, tileSize) {
-    const sm = new SphericalMercator({ size: tileSize * s });
-    const topRight = sm.px([bbox[2], bbox[3]], z);
-    const bottomLeft = sm.px([bbox[0], bbox[1]], z);
+    const sphericalMercator = new SphericalMercator({ size: tileSize * s });
+    const topRight = sphericalMercator.px([bbox[2], bbox[3]], z);
+    const bottomLeft = sphericalMercator.px([bbox[0], bbox[1]], z);
     const center = {};
+
     center.w = topRight[0] - bottomLeft[0];
     center.h = bottomLeft[1] - topRight[1];
 
@@ -67,8 +68,8 @@ abaculus.coordsFromBbox = function (z, s, bbox, limit, tileSize) {
 };
 
 abaculus.coordsFromCenter = function (z, s, center, limit, tileSize) {
-    const sm = new SphericalMercator({ size: tileSize * s });
-    const origin = sm.px([center.x, center.y], z);
+    const sphericalMercator = new SphericalMercator({ size: tileSize * s });
+    const origin = sphericalMercator.px([center.x, center.y], z);
 
     center.x = origin[0];
     center.y = origin[1];
@@ -84,19 +85,16 @@ abaculus.coordsFromCenter = function (z, s, center, limit, tileSize) {
 
 // Generate the zxy and px/py offsets needed for each tile in a static image.
 // x, y are center coordinates in pixels
-abaculus.tileList = function (z, s, center, tileSize) {
-    const x = center.x;
-    const y = center.y;
-    const w = center.w;
-    const h = center.h;
-    const dimensions = {x: w, y: h};
+abaculus.tileList = function (zoom, scale, center, tileSize) {
+    const { x, y, w, h } = center;
+    const dimensions = { x: w, y: h };
     const size = tileSize || 256;
-    const ts = Math.floor(size * s);
+    const ts = Math.floor(size * scale);
 
     const centerCoordinate = {
         column: x / size,
         row: y / size,
-        zoom: z
+        zoom
     };
 
     function pointCoordinate(point) {
@@ -112,7 +110,7 @@ abaculus.tileList = function (z, s, center, tileSize) {
 
     function coordinatePoint(coord) {
         // Return an x, y point on the map image for a given coordinate.
-        if (coord.zoom != z) {
+        if (coord.zoom != zoom) {
             coord = coord.zoomTo(z);
         }
 
@@ -130,7 +128,7 @@ abaculus.tileList = function (z, s, center, tileSize) {
         };
     }
 
-    const maxTilesInRow = Math.pow(2, z);
+    const maxTilesInRow = Math.pow(2, zoom);
     const tl = floorObj(pointCoordinate({x: 0, y:0}));
     const br = floorObj(pointCoordinate(dimensions));
     const coords = {};
@@ -142,7 +140,7 @@ abaculus.tileList = function (z, s, center, tileSize) {
             const c = {
                 column: column,
                 row: row,
-                zoom: z,
+                zoom,
             };
             const p = coordinatePoint(c);
 
@@ -169,7 +167,7 @@ abaculus.tileList = function (z, s, center, tileSize) {
 
     coords.dimensions = { x: w, y: h };
     coords.center = floorObj(centerCoordinate);
-    coords.scale = s;
+    coords.scale = scale;
 
     return coords;
 };
