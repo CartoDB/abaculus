@@ -1,22 +1,23 @@
 'use strict';
 
-var SphericalMercator = require('sphericalmercator');
-var queue = require('d3-queue').queue;
-var blend = require('@carto/mapnik').blend;
-var crypto = require('crypto');
+const SphericalMercator = require('sphericalmercator');
+const queue = require('d3-queue').queue;
+const blend = require('@carto/mapnik').blend;
+const crypto = require('crypto');
 
 module.exports = abaculus;
 
-function abaculus(arg, callback) {
-    var z = arg.zoom || 0,
-        s = arg.scale || 1,
-        center = arg.center || null,
-        bbox = arg.bbox || null,
-        getTile = arg.getTile || null,
-        format = arg.format || 'png',
-        quality = arg.quality || null,
-        limit = arg.limit || 19008,
-        tileSize = arg.tileSize || 256;
+function abaculus (arg, callback) {
+    const z = arg.zoom || 0;
+    const s = arg.scale || 1;
+    const bbox = arg.bbox || null;
+    const getTile = arg.getTile || null;
+    const format = arg.format || 'png';
+    const quality = arg.quality || null;
+    const limit = arg.limit || 19008;
+    const tileSize = arg.tileSize || 256;
+
+    let center = arg.center || null;
 
     if (!getTile) return callback(new Error('Invalid function for getting tiles'));
 
@@ -30,23 +31,23 @@ function abaculus(arg, callback) {
         return callback(new Error('No coordinates provided.'));
     }
     // generate list of tile coordinates center
-    var coords = abaculus.tileList(z, s, center, tileSize);
+    const coords = abaculus.tileList(z, s, center, tileSize);
 
     // get tiles based on coordinate list and stitch them together
     abaculus.stitchTiles(coords, format, quality, getTile, callback);
 }
 
-abaculus.coordsFromBbox = function(z, s, bbox, limit, tileSize) {
-    var sm = new SphericalMercator({ size: tileSize * s });
-    var topRight = sm.px([bbox[2], bbox[3]], z),
-        bottomLeft = sm.px([bbox[0], bbox[1]], z);
-    var center = {};
+abaculus.coordsFromBbox = function (z, s, bbox, limit, tileSize) {
+    const sm = new SphericalMercator({ size: tileSize * s });
+    const topRight = sm.px([bbox[2], bbox[3]], z);
+    const bottomLeft = sm.px([bbox[0], bbox[1]], z);
+    const center = {};
     center.w = topRight[0] - bottomLeft[0];
     center.h = bottomLeft[1] - topRight[1];
 
     if (center.w <= 0 || center.h <= 0) throw new Error('Incorrect coordinates');
 
-    var origin = [topRight[0] - center.w / 2, topRight[1] + center.h / 2];
+    const origin = [topRight[0] - center.w / 2, topRight[1] + center.h / 2];
     center.x = origin[0];
     center.y = origin[1];
     center.w = Math.round(center.w * s);
@@ -56,9 +57,9 @@ abaculus.coordsFromBbox = function(z, s, bbox, limit, tileSize) {
     return center;
 };
 
-abaculus.coordsFromCenter = function(z, s, center, limit, tileSize) {
-    var sm = new SphericalMercator({ size: tileSize * s });
-    var origin = sm.px([center.x, center.y], z);
+abaculus.coordsFromCenter = function (z, s, center, limit, tileSize) {
+    const sm = new SphericalMercator({ size: tileSize * s });
+    const origin = sm.px([center.x, center.y], z);
     center.x = origin[0];
     center.y = origin[1];
     center.w = Math.round(center.w * s);
@@ -70,23 +71,23 @@ abaculus.coordsFromCenter = function(z, s, center, limit, tileSize) {
 
 // Generate the zxy and px/py offsets needed for each tile in a static image.
 // x, y are center coordinates in pixels
-abaculus.tileList = function(z, s, center, tileSize) {
-    var x = center.x,
-        y = center.y,
-        w = center.w,
-        h = center.h;
-    var dimensions = {x: w, y: h};
-    var size = tileSize || 256;
-    var ts = Math.floor(size * s);
+abaculus.tileList = function (z, s, center, tileSize) {
+    const x = center.x;
+    const y = center.y;
+    const w = center.w;
+    const h = center.h;
+    const dimensions = {x: w, y: h};
+    const size = tileSize || 256;
+    const ts = Math.floor(size * s);
 
-    var centerCoordinate = {
+    const centerCoordinate = {
         column: x / size,
         row: y / size,
         zoom: z
     };
 
     function pointCoordinate(point) {
-        var coord = {
+        const coord = {
             column: centerCoordinate.column,
             row: centerCoordinate.row,
             zoom: centerCoordinate.zoom,
@@ -113,20 +114,21 @@ abaculus.tileList = function(z, s, center, tileSize) {
         };
     }
 
-    var maxTilesInRow = Math.pow(2, z);
-    var tl = floorObj(pointCoordinate({x: 0, y:0}));
-    var br = floorObj(pointCoordinate(dimensions));
-    var coords = {};
+    const maxTilesInRow = Math.pow(2, z);
+    const tl = floorObj(pointCoordinate({x: 0, y:0}));
+    const br = floorObj(pointCoordinate(dimensions));
+    const coords = {};
+
     coords.tiles = [];
 
-    for (var column = tl.column; column <= br.column; column++) {
-        for (var row = tl.row; row <= br.row; row++) {
-            var c = {
+    for (let column = tl.column; column <= br.column; column++) {
+        for (let row = tl.row; row <= br.row; row++) {
+            const c = {
                 column: column,
                 row: row,
                 zoom: z,
             };
-            var p = coordinatePoint(c);
+            const p = coordinatePoint(c);
 
             // Wrap tiles with negative coordinates.
             c.column = c.column % maxTilesInRow;
@@ -151,15 +153,16 @@ abaculus.tileList = function(z, s, center, tileSize) {
 
 abaculus.stitchTiles = function(coords, format, quality, getTile, callback) {
     if (!coords) return callback(new Error('No coords object.'));
-    var tileQueue = queue(32);
-    var w = coords.dimensions.x,
-        h = coords.dimensions.y,
-        s = coords.scale,
-        tiles = coords.tiles;
+
+    const tileQueue = queue(32);
+    const w = coords.dimensions.x;
+    const h = coords.dimensions.y;
+    const s = coords.scale;
+    const tiles = coords.tiles;
 
     tiles.forEach(function(t) {
         tileQueue.defer(function(z, x, y, px, py, done) {
-            var cb = function(err, buffer, headers, stats) {
+            const cb = function(err, buffer, headers, stats) {
                 if (err) return done(err);
                 done(err, {
                     buffer: buffer,
@@ -181,13 +184,13 @@ abaculus.stitchTiles = function(coords, format, quality, getTile, callback) {
     function tileQueueFinish(err, data) {
         if (err) return callback(err);
         if (!data) return callback(new Error('No tiles to stitch.'));
-        var headers = [];
+        const headers = [];
         data.forEach(function(d) {
             headers.push(d.headers);
         });
 
-        var numTiles = data.length;
-        var renderTotal = data
+        const numTiles = data.length;
+        const renderTotal = data
             .map(function(d) {
                 return d.stats.render || 0;
             })
@@ -195,7 +198,7 @@ abaculus.stitchTiles = function(coords, format, quality, getTile, callback) {
                 return acc + renderTime;
             }, 0);
 
-        var stats = {
+        const stats = {
             tiles: numTiles,
             renderAvg: Math.round(renderTotal / numTiles)
         };
@@ -217,8 +220,8 @@ abaculus.stitchTiles = function(coords, format, quality, getTile, callback) {
 
 // Calculate TTL from newest (max mtime) layer.
 function headerReduce(headers, format) {
-    var minmtime = new Date('Sun, 23 Feb 2014 18:00:00 UTC');
-    var composed = {};
+    const minmtime = new Date('Sun, 23 Feb 2014 18:00:00 UTC');
+    const composed = {};
 
     composed['Cache-Control'] = 'max-age=3600';
 
@@ -235,9 +238,9 @@ function headerReduce(headers, format) {
         break;
     }
 
-    var times = headers.reduce(function(memo, h) {
+    const times = headers.reduce(function(memo, h) {
         if (!h) return memo;
-        for (var k in h) if (k.toLowerCase() === 'last-modified') {
+        for (const k in h) if (k.toLowerCase() === 'last-modified') {
             memo.push(new Date(h[k]));
             return memo;
         }
@@ -250,9 +253,9 @@ function headerReduce(headers, format) {
     }
     composed['Last-Modified'] = (new Date(Math.max.apply(Math, times))).toUTCString();
 
-    var etag = headers.reduce(function(memo, h) {
+    const etag = headers.reduce(function(memo, h) {
         if (!h) return memo;
-        for (var k in h) if (k.toLowerCase() === 'etag') {
+        for (const k in h) if (k.toLowerCase() === 'etag') {
             memo.push(h[k]);
             return memo;
         }
