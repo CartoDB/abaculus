@@ -97,40 +97,9 @@ abaculus.tileList = function (zoom, scale, center, tileSize) {
         zoom
     };
 
-    function pointCoordinate(point) {
-        const coord = {
-            column: centerCoordinate.column,
-            row: centerCoordinate.row,
-            zoom: centerCoordinate.zoom,
-        };
-        coord.column += (point.x - w / 2) / ts;
-        coord.row += (point.y - h / 2) / ts;
-        return coord;
-    }
-
-    function coordinatePoint(coord) {
-        // Return an x, y point on the map image for a given coordinate.
-        if (coord.zoom != zoom) {
-            coord = coord.zoomTo(z);
-        }
-
-        return {
-            x: w / 2 + ts * (coord.column - centerCoordinate.column),
-            y: h / 2 + ts * (coord.row - centerCoordinate.row)
-        };
-    }
-
-    function floorObj(obj) {
-        return {
-            row: Math.floor(obj.row),
-            column: Math.floor(obj.column),
-            zoom: obj.zoom
-        };
-    }
-
     const maxTilesInRow = Math.pow(2, zoom);
-    const tl = floorObj(pointCoordinate({x: 0, y:0}));
-    const br = floorObj(pointCoordinate(dimensions));
+    const tl = floorObj(pointCoordinate(centerCoordinate, {x: 0, y:0}, w, h, ts));
+    const br = floorObj(pointCoordinate(centerCoordinate, dimensions, w, h, ts));
     const coords = {};
 
     coords.tiles = [];
@@ -142,7 +111,7 @@ abaculus.tileList = function (zoom, scale, center, tileSize) {
                 row: row,
                 zoom,
             };
-            const p = coordinatePoint(c);
+            const p = coordinatePoint(zoom, centerCoordinate, c, w, h, ts);
 
             // Wrap tiles with negative coordinates.
             c.column = c.column % maxTilesInRow;
@@ -171,6 +140,40 @@ abaculus.tileList = function (zoom, scale, center, tileSize) {
 
     return coords;
 };
+
+function pointCoordinate(centerCoordinate, point, w, h, tileSize) {
+    const coord = {
+        column: centerCoordinate.column,
+        row: centerCoordinate.row,
+        zoom: centerCoordinate.zoom,
+    };
+
+    coord.column += (point.x - w / 2) / tileSize;
+    coord.row += (point.y - h / 2) / tileSize;
+
+    return coord;
+}
+
+function coordinatePoint(zoom, centerCoordinate, coord, w, h, tileSize) {
+    // Return an x, y point on the map image for a given coordinate.
+    if (coord.zoom != zoom) {
+        coord = coord.zoomTo(zoom);
+    }
+
+    return {
+        x: w / 2 + tileSize * (coord.column - centerCoordinate.column),
+        y: h / 2 + tileSize * (coord.row - centerCoordinate.row)
+    };
+}
+
+function floorObj(obj) {
+    return {
+        row: Math.floor(obj.row),
+        column: Math.floor(obj.column),
+        zoom: obj.zoom
+    };
+}
+
 
 abaculus.stitchTiles = function(coords, format, quality, getTile, callback) {
     if (!coords) {
