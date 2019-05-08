@@ -19,7 +19,9 @@ function abaculus (arg, callback) {
 
     let center = arg.center || null;
 
-    if (!getTile) return callback(new Error('Invalid function for getting tiles'));
+    if (!getTile) {
+        return callback(new Error('Invalid function for getting tiles'));
+    }
 
     if (center) {
         // get center coordinates in px from lng,lat
@@ -45,7 +47,9 @@ abaculus.coordsFromBbox = function (z, s, bbox, limit, tileSize) {
     center.w = topRight[0] - bottomLeft[0];
     center.h = bottomLeft[1] - topRight[1];
 
-    if (center.w <= 0 || center.h <= 0) throw new Error('Incorrect coordinates');
+    if (center.w <= 0 || center.h <= 0) {
+        throw new Error('Incorrect coordinates');
+    }
 
     const origin = [topRight[0] - center.w / 2, topRight[1] + center.h / 2];
     center.x = origin[0];
@@ -53,19 +57,26 @@ abaculus.coordsFromBbox = function (z, s, bbox, limit, tileSize) {
     center.w = Math.round(center.w * s);
     center.h = Math.round(center.h * s);
 
-    if (center.w >= limit || center.h >= limit) throw new Error('Desired image is too large.');
+    if (center.w >= limit || center.h >= limit) {
+        throw new Error('Desired image is too large.');
+    }
+
     return center;
 };
 
 abaculus.coordsFromCenter = function (z, s, center, limit, tileSize) {
     const sm = new SphericalMercator({ size: tileSize * s });
     const origin = sm.px([center.x, center.y], z);
+
     center.x = origin[0];
     center.y = origin[1];
     center.w = Math.round(center.w * s);
     center.h = Math.round(center.h * s);
 
-    if (center.w >= limit || center.h >= limit) throw new Error('Desired image is too large.');
+    if (center.w >= limit || center.h >= limit) {
+        throw new Error('Desired image is too large.');
+    }
+
     return center;
 };
 
@@ -99,7 +110,10 @@ abaculus.tileList = function (z, s, center, tileSize) {
 
     function coordinatePoint(coord) {
         // Return an x, y point on the map image for a given coordinate.
-        if (coord.zoom != z) coord = coord.zoomTo(z);
+        if (coord.zoom != z) {
+            coord = coord.zoomTo(z);
+        }
+
         return {
             x: w / 2 + ts * (coord.column - centerCoordinate.column),
             y: h / 2 + ts * (coord.row - centerCoordinate.row)
@@ -132,9 +146,15 @@ abaculus.tileList = function (z, s, center, tileSize) {
 
             // Wrap tiles with negative coordinates.
             c.column = c.column % maxTilesInRow;
-            if (c.column < 0) c.column = maxTilesInRow + c.column;
 
-            if (c.row < 0 || c.row >= maxTilesInRow) continue;
+            if (c.column < 0) {
+                c.column = maxTilesInRow + c.column;
+            }
+
+            if (c.row < 0 || c.row >= maxTilesInRow) {
+                continue;
+            }
+
             coords.tiles.push({
                 z: c.zoom,
                 x: c.column,
@@ -144,6 +164,7 @@ abaculus.tileList = function (z, s, center, tileSize) {
             });
         }
     }
+
     coords.dimensions = { x: w, y: h };
     coords.center = floorObj(centerCoordinate);
     coords.scale = s;
@@ -152,7 +173,9 @@ abaculus.tileList = function (z, s, center, tileSize) {
 };
 
 abaculus.stitchTiles = function(coords, format, quality, getTile, callback) {
-    if (!coords) return callback(new Error('No coords object.'));
+    if (!coords) {
+        return callback(new Error('No coords object.'));
+    }
 
     const tileQueue = queue(32);
     const w = coords.dimensions.x;
@@ -163,7 +186,10 @@ abaculus.stitchTiles = function(coords, format, quality, getTile, callback) {
     tiles.forEach(function(t) {
         tileQueue.defer(function(z, x, y, px, py, done) {
             const cb = function(err, buffer, headers, stats) {
-                if (err) return done(err);
+                if (err) {
+                    return done(err);
+                }
+
                 done(err, {
                     buffer: buffer,
                     headers: headers,
@@ -182,8 +208,14 @@ abaculus.stitchTiles = function(coords, format, quality, getTile, callback) {
     });
 
     function tileQueueFinish(err, data) {
-        if (err) return callback(err);
-        if (!data) return callback(new Error('No tiles to stitch.'));
+        if (err) {
+            return callback(err);
+        }
+
+        if (!data) {
+            return callback(new Error('No tiles to stitch.'));
+        }
+
         const headers = [];
         data.forEach(function(d) {
             headers.push(d.headers);
@@ -210,7 +242,10 @@ abaculus.stitchTiles = function(coords, format, quality, getTile, callback) {
             height: h,
             reencode: true
         }, function(err, buffer) {
-            if (err) return callback(err);
+            if (err) {
+                return callback(err);
+            }
+
             callback(null, buffer, headerReduce(headers, format), stats);
         });
     }
@@ -239,28 +274,39 @@ function headerReduce(headers, format) {
     }
 
     const times = headers.reduce(function(memo, h) {
-        if (!h) return memo;
+        if (!h) {
+            return memo;
+        }
+
         for (const k in h) if (k.toLowerCase() === 'last-modified') {
             memo.push(new Date(h[k]));
             return memo;
         }
+
         return memo;
     }, []);
+
     if (!times.length) {
         times.push(new Date());
     } else {
         times.push(minmtime);
     }
+
     composed['Last-Modified'] = (new Date(Math.max.apply(Math, times))).toUTCString();
 
     const etag = headers.reduce(function(memo, h) {
-        if (!h) return memo;
+        if (!h) {
+            return memo;
+        }
+
         for (const k in h) if (k.toLowerCase() === 'etag') {
             memo.push(h[k]);
             return memo;
         }
+
         return memo;
     }, []);
+
     if (!etag.length) {
         composed['ETag'] = '"' + crypto.createHash('md5').update(composed['Last-Modified']).digest('hex') + '"';
     } else {
