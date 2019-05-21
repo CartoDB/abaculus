@@ -1,7 +1,11 @@
 language: node_js
 
+sudo: false
+dist: xenial
+os: linux
+
 node_js:
   - "10"
-  - "11"
+  - "12"
 
-sudo: false
+
