@@ -7,16 +7,16 @@ const crypto = require('crypto');
 
 module.exports = abaculus;
 
-function abaculus (arg, callback) {
-    const zoom = arg.zoom || 0;
-    const scale = arg.scale || 1;
-    const getTile = arg.getTile || null;
-    const format = arg.format || 'png';
-    const quality = arg.quality || null;
-    const limit = arg.limit || 19008;
-    const tileSize = arg.tileSize || 256;
-    const bbox = arg.bbox;
-    let center = arg.center;
+function abaculus (options, callback) {
+    const zoom = options.zoom || 0;
+    const scale = options.scale || 1;
+    const getTile = options.getTile || null;
+    const format = options.format || 'png';
+    const quality = options.quality || null;
+    const limit = options.limit || 19008;
+    const tileSize = options.tileSize || 256;
+    const bbox = options.bbox;
+    let center = options.center;
 
     if (!getTile) {
         return callback(new Error('Invalid function for getting tiles'));
@@ -41,42 +41,42 @@ function abaculus (arg, callback) {
     abaculus.stitchTiles(coords, format, quality, getTile, callback);
 }
 
-abaculus.coordsFromBbox = function (z, s, bbox, limit, tileSize) {
-    const sphericalMercator = new SphericalMercator({ size: tileSize * s });
-    const topRight = sphericalMercator.px([bbox[2], bbox[3]], z);
-    const bottomLeft = sphericalMercator.px([bbox[0], bbox[1]], z);
+abaculus.coordsFromBbox = function (zoom, scale, bbox, limit, tileSize) {
+    const sphericalMercator = new SphericalMercator({ size: tileSize * scale });
+    const bottomLeft = sphericalMercator.px([bbox[0], bbox[1]], zoom);
+    const topRight = sphericalMercator.px([bbox[2], bbox[3]], zoom);
     const center = {};
 
-    center.w = topRight[0] - bottomLeft[0];
-    center.h = bottomLeft[1] - topRight[1];
+    center.width = topRight[0] - bottomLeft[0];
+    center.height = bottomLeft[1] - topRight[1];
 
-    if (center.w <= 0 || center.h <= 0) {
+    if (center.width <= 0 || center.height <= 0) {
         throw new Error('Incorrect coordinates');
     }
 
-    const origin = [topRight[0] - center.w / 2, topRight[1] + center.h / 2];
+    const origin = [topRight[0] - center.width / 2, topRight[1] + center.height / 2];
     center.x = origin[0];
     center.y = origin[1];
-    center.w = Math.round(center.w * s);
-    center.h = Math.round(center.h * s);
+    center.width = Math.round(center.width * scale);
+    center.height = Math.round(center.height * scale);
 
-    if (center.w >= limit || center.h >= limit) {
+    if (center.width >= limit || center.height >= limit) {
         throw new Error('Desired image is too large.');
     }
 
     return center;
 };
 
-abaculus.coordsFromCenter = function (z, s, center, limit, tileSize) {
-    const sphericalMercator = new SphericalMercator({ size: tileSize * s });
-    const origin = sphericalMercator.px([center.x, center.y], z);
+abaculus.coordsFromCenter = function (zoom, scale, center, limit, tileSize) {
+    const sphericalMercator = new SphericalMercator({ size: tileSize * scale });
+    const origin = sphericalMercator.px([center.x, center.y], zoom);
 
     center.x = origin[0];
     center.y = origin[1];
-    center.w = Math.round(center.w * s);
-    center.h = Math.round(center.h * s);
+    center.width = Math.round(center.width * scale);
+    center.height = Math.round(center.height * scale);
 
-    if (center.w >= limit || center.h >= limit) {
+    if (center.width >= limit || center.height >= limit) {
         throw new Error('Desired image is too large.');
     }
 
@@ -85,84 +85,83 @@ abaculus.coordsFromCenter = function (z, s, center, limit, tileSize) {
 
 // Generate the zxy and px/py offsets needed for each tile in a static image.
 // x, y are center coordinates in pixels
-abaculus.tileList = function (zoom, scale, center, tileSize) {
-    const { x, y, w, h } = center;
-    const dimensions = { x: w, y: h };
-    const size = tileSize || 256;
-    const ts = Math.floor(size * scale);
+abaculus.tileList = function (zoom, scale, center, tileSize = 256) {
+    const { x, y, width, height } = center;
+    const dimensions = { x: width, y: height };
+    const size = Math.floor(tileSize * scale);
 
     const centerCoordinate = {
-        column: x / size,
-        row: y / size,
+        column: x / tileSize,
+        row: y / tileSize,
         zoom
     };
 
     const maxTilesInRow = Math.pow(2, zoom);
-    const tl = floorObj(pointCoordinate(centerCoordinate, {x: 0, y:0}, w, h, ts));
-    const br = floorObj(pointCoordinate(centerCoordinate, dimensions, w, h, ts));
+    const topLeft = floorObj(pointCoordinate(centerCoordinate, { x: 0, y:0 }, width, height, size));
+    const bottomRight = floorObj(pointCoordinate(centerCoordinate, dimensions, width, height, size));
     const coords = {};
 
     coords.tiles = [];
 
-    for (let column = tl.column; column <= br.column; column++) {
-        for (let row = tl.row; row <= br.row; row++) {
-            const c = {
+    for (let column = topLeft.column; column <= bottomRight.column; column++) {
+        for (let row = topLeft.row; row <= bottomRight.row; row++) {
+            const coord = {
                 column: column,
                 row: row,
                 zoom,
             };
-            const p = coordinatePoint(zoom, centerCoordinate, c, w, h, ts);
+            const point = coordinatePoint(zoom, centerCoordinate, coord, width, height, size);
 
             // Wrap tiles with negative coordinates.
-            c.column = c.column % maxTilesInRow;
+            coord.column = coord.column % maxTilesInRow;
 
-            if (c.column < 0) {
-                c.column = maxTilesInRow + c.column;
+            if (coord.column < 0) {
+                coord.column = maxTilesInRow + coord.column;
             }
 
-            if (c.row < 0 || c.row >= maxTilesInRow) {
+            if (coord.row < 0 || coord.row >= maxTilesInRow) {
                 continue;
             }
 
             coords.tiles.push({
-                z: c.zoom,
-                x: c.column,
-                y: c.row,
-                px: Math.round(p.x),
-                py: Math.round(p.y)
+                z: coord.zoom,
+                x: coord.column,
+                y: coord.row,
+                px: Math.round(point.x),
+                py: Math.round(point.y)
             });
         }
     }
 
-    coords.dimensions = { x: w, y: h };
+    coords.dimensions = { x: width, y: height };
     coords.center = floorObj(centerCoordinate);
     coords.scale = scale;
 
     return coords;
 };
 
-function pointCoordinate(centerCoordinate, point, w, h, tileSize) {
+function pointCoordinate(centerCoordinate, point, width, height, tileSize) {
     const coord = {
         column: centerCoordinate.column,
         row: centerCoordinate.row,
         zoom: centerCoordinate.zoom,
     };
 
-    coord.column += (point.x - w / 2) / tileSize;
-    coord.row += (point.y - h / 2) / tileSize;
+    coord.column += (point.x - width / 2) / tileSize;
+    coord.row += (point.y - height / 2) / tileSize;
 
     return coord;
 }
 
-function coordinatePoint(zoom, centerCoordinate, coord, w, h, tileSize) {
+function coordinatePoint(zoom, centerCoordinate, coord, width, height, tileSize) {
     // Return an x, y point on the map image for a given coordinate.
     if (coord.zoom != zoom) {
         coord = coord.zoomTo(zoom);
     }
 
     return {
-        x: w / 2 + tileSize * (coord.column - centerCoordinate.column),
-        y: h / 2 + tileSize * (coord.row - centerCoordinate.row)
+        x: width / 2 + tileSize * (coord.column - centerCoordinate.column),
+        y: height / 2 + tileSize * (coord.row - centerCoordinate.row)
     };
 }
 
@@ -181,9 +180,9 @@ abaculus.stitchTiles = function(coords, format, quality, getTile, callback) {
     }
 
     const tileQueue = queue(32);
-    const w = coords.dimensions.x;
-    const h = coords.dimensions.y;
-    const s = coords.scale;
+    const width = coords.dimensions.x;
+    const height = coords.dimensions.y;
+    const scale = coords.scale;
     const tiles = coords.tiles;
 
     tiles.forEach(function(t) {
@@ -202,7 +201,7 @@ abaculus.stitchTiles = function(coords, format, quality, getTile, callback) {
                     reencode: true
                 })
             };
-            cb.scale = s;
+            cb.scale = scale;
             cb.format = format;
             // getTile is a function that returns
             // a tile given z, x, y, & callback
@@ -241,8 +240,8 @@ abaculus.stitchTiles = function(coords, format, quality, getTile, callback) {
         blend(data, {
             format: format,
             quality: quality,
-            width: w,
-            height: h,
+            width: width,
+            height: height,
             reencode: true
         }, function(err, buffer) {
             if (err) {

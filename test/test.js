@@ -42,8 +42,8 @@ describe('Get center from bbox', function() {
         var bbox = [-60, -60, 60, 60];
 
         var center = printer.coordsFromBbox(zoom, scale, bbox, limit);
-        assert.deepEqual(center.w, 10920);
-        assert.deepEqual(center.h, 13736);
+        assert.deepEqual(center.width, 10920);
+        assert.deepEqual(center.height, 13736);
         assert.deepEqual(center.x, x);
         assert.deepEqual(center.y, y);
     });
@@ -54,8 +54,8 @@ describe('get coordinates from center', function() {
         var center = {
             x: 0,
             y: 0,
-            w: 4752,
-            h: 4752
+            width: 4752,
+            height: 4752
         };
         assert.throws( function() {
             printer.coordsFromCenter(zoom, scale, center, limit);
@@ -65,8 +65,8 @@ describe('get coordinates from center', function() {
         var center = {
             x: 0,
             y: 20,
-            w: 800,
-            h: 800
+            width: 800,
+            height: 800
         };
         center = printer.coordsFromCenter(zoom, scale, center, limit);
         assert.equal(center.x, x);
@@ -77,8 +77,8 @@ describe('get coordinates from center', function() {
             center = {
                 x: 39,
                 y: -14,
-                w: 1000,
-                h: 1000
+                width: 1000,
+                height: 1000
             };
         center = printer.coordsFromCenter(zoom, scale, center, limit);
         assert.equal(center.x, 623);
@@ -92,7 +92,7 @@ describe('create list of tile coordinates', function() {
             scale = 4,
             width = 1824,
             height = 1832,
-            center = { x: 4096, y: 4096, w: width, h: height };
+            center = { x: 4096, y: 4096, width: width, height: height };
 
         var expectedCoords = {
             tiles: [
@@ -114,7 +114,7 @@ describe('create list of tile coordinates', function() {
             scale = 1,
             width = 1000,
             height = 1000,
-            center = {x: 623, y: 552, w: width, h: height};
+            center = {x: 623, y: 552, width: width, height: height};
 
         var expectedCoords = {
             tiles: [
@@ -152,7 +152,7 @@ describe('create list of tile coordinates', function() {
             scale = 1,
             width = 2000,
             height = 2100,
-            center = {x: 100, y: 100, w: width, h: height};
+            center = {x: 100, y: 100, width: width, height: height};
 
         var expectedCoords = {
             tiles: [
@@ -231,8 +231,8 @@ describe('create list of tile coordinates', function() {
                 center: {
                     x: 0,
                     y: 0,
-                    w: 200,
-                    h: 200
+                    width: 200,
+                    height: 200
                 },
                 format: 'png',
                 quality: 50,
