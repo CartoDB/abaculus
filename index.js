@@ -1,38 +1,33 @@
 'use strict';
 
+const { promisify } = require('util');
 const SphericalMercator = require('sphericalmercator');
-const queue = require('d3-queue').queue;
-const blend = require('@carto/mapnik').blend;
+const blend = promisify(require('@carto/mapnik').blend);
 const crypto = require('crypto');
 
 module.exports = abaculus;
 
 function abaculus (options, callback) {
+    if (!options.getTile) {
+        return callback(new Error('Invalid function for getting tiles'));
+    }
+
+    if (!options.center && !options.bbox) {
+        return callback(new Error('No coordinates provided.'));
+    }
+
+    const getTile = options.getTile;
     const zoom = options.zoom || 0;
     const scale = options.scale || 1;
-    const getTile = options.getTile || null;
     const format = options.format || 'png';
     const quality = options.quality || null;
     const limit = options.limit || 19008;
     const tileSize = options.tileSize || 256;
-    const bbox = options.bbox;
-    let center = options.center;
-
-    if (!getTile) {
-        return callback(new Error('Invalid function for getting tiles'));
-    }
-
-    if (!center && !bbox) {
-        return callback(new Error('No coordinates provided.'));
-    }
-
-    if (center) {
+    const center = options.center ?
         // get center coordinates in px from lng,lat
-        center = abaculus.coordsFromCenter(zoom, scale, center, limit, tileSize);
-    } else if (bbox) {
+        abaculus.coordsFromCenter(zoom, scale, options.center, limit, tileSize) :
         // get center coordinates in px from [w,s,e,n] bbox
-        center = abaculus.coordsFromBbox(zoom, scale, bbox, limit, tileSize);
-    }
+        abaculus.coordsFromBbox(zoom, scale, options.bbox, limit, tileSize);
 
     // generate list of tile coordinates center
     const coords = abaculus.tileList(zoom, scale, center, tileSize);
@@ -174,85 +169,57 @@ function floorObj(obj) {
 }
 
 
-abaculus.stitchTiles = function(coords, format, quality, getTile, callback) {
+abaculus.stitchTiles = function (coords, format, quality, getTile, callback) {
     if (!coords) {
         return callback(new Error('No coords object.'));
     }
 
-    const tileQueue = queue(32);
     const width = coords.dimensions.x;
     const height = coords.dimensions.y;
-    const scale = coords.scale;
     const tiles = coords.tiles;
 
-    tiles.forEach(function(t) {
-        tileQueue.defer(function(z, x, y, px, py, done) {
-            const cb = function(err, buffer, headers, stats) {
-                if (err) {
-                    return done(err);
-                }
+    getTile = promisify(getTile);
 
-                done(err, {
-                    buffer: buffer,
-                    headers: headers,
-                    stats: stats || {},
-                    x: px,
-                    y: py,
-                    reencode: true
-                })
-            };
-            cb.scale = scale;
-            cb.format = format;
-            // getTile is a function that returns
-            // a tile given z, x, y, & callback
-            getTile(z, x, y, cb);
-        }, t.z, t.x, t.y, t.px, t.py);
-    });
+    const fetchings = tiles.map(({ z, x, y, px, py }) => getTile(z, x, y)
+        .then((buffer, headers, stats = {}) => ({ buffer, headers, stats, x: px, y: py, reencode: true })));
 
-    function tileQueueFinish(err, data) {
-        if (err) {
-            return callback(err);
-        }
-
-        if (!data) {
-            return callback(new Error('No tiles to stitch.'));
-        }
-
-        const headers = [];
-        data.forEach(function(d) {
-            headers.push(d.headers);
-        });
-
-        const numTiles = data.length;
-        const renderTotal = data
-            .map(function(d) {
-                return d.stats.render || 0;
-            })
-            .reduce(function(acc, renderTime) {
-                return acc + renderTime;
-            }, 0);
-
-        const stats = {
-            tiles: numTiles,
-            renderAvg: Math.round(renderTotal / numTiles)
-        };
-
-        blend(data, {
-            format: format,
-            quality: quality,
-            width: width,
-            height: height,
-            reencode: true
-        }, function(err, buffer) {
-            if (err) {
-                return callback(err);
+    Promise.all(fetchings)
+        .then(data => {
+            if (!data) {
+                throw new Error('No tiles to stitch.');
             }
 
-            callback(null, buffer, headerReduce(headers, format), stats);
-        });
-    }
+            const headers = [];
+            data.forEach(function(d) {
+                headers.push(d.headers);
+            });
 
-    tileQueue.awaitAll(tileQueueFinish);
+            const numTiles = data.length;
+            const renderTotal = data
+                .map(function(d) {
+                    return d.stats.render || 0;
+                })
+                .reduce(function(acc, renderTime) {
+                    return acc + renderTime;
+                }, 0);
+
+            const stats = {
+                tiles: numTiles,
+                renderAvg: Math.round(renderTotal / numTiles)
+            };
+
+            const options = {
+                format: format,
+                quality: quality,
+                width: width,
+                height: height,
+                reencode: true
+            };
+
+            return blend(data, options)
+                .then(buffer =>  callback(null, buffer, headerReduce(headers, format), stats));
+        })
+        .catch(err => callback(err));
 };
 
 // Calculate TTL from newest (max mtime) layer.
