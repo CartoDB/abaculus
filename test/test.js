@@ -103,7 +103,7 @@ describe('create list of tile coordinates', function() {
             { z: zoom, x: 16, y: 15, px: 912, py: -108 },
             { z: zoom, x: 16, y: 16, px: 912, py: 916 }
         ];
-        var coords = printer.tileList(zoom, scale, center);
+        var coords = printer.tileList(zoom, scale, center, tileSize);
         assert.deepEqual(JSON.stringify(coords), JSON.stringify(expectedCoords));
     });
 
@@ -137,7 +137,7 @@ describe('create list of tile coordinates', function() {
             { z: zoom, x: 0, y: 3, px:  901, py: 716 }
         ];
 
-        var coords = printer.tileList(zoom, scale, center);
+        var coords = printer.tileList(zoom, scale, center, tileSize);
         assert.deepEqual(JSON.stringify(coords), JSON.stringify(expectedCoords));
     });
 
@@ -169,7 +169,7 @@ describe('create list of tile coordinates', function() {
             {z: zoom, x: 0, y: 1, px: 1924, py: 1206}
         ];
 
-        var coords = printer.tileList(zoom, scale, center);
+        var coords = printer.tileList(zoom, scale, center, tileSize);
         assert.deepEqual(JSON.stringify(coords), JSON.stringify(expectedCoords));
     });
 });

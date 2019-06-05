@@ -80,7 +80,7 @@ abaculus.coordsFromCenter = function (zoom, scale, center, limit, tileSize) {
 
 // Generate the zxy and px/py offsets needed for each tile in a static image.
 // x, y are center coordinates in pixels
-abaculus.tileList = function (zoom, scale, center, tileSize = 256) {
+abaculus.tileList = function (zoom, scale, center, tileSize) {
     const { x, y, width, height } = center;
     const size = Math.floor(tileSize * scale);
 
