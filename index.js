@@ -175,16 +175,16 @@ abaculus.stitchTiles = function (coords, format, quality, getTile, callback) {
 
     const width = coords.dimensions.x;
     const height = coords.dimensions.y;
-    const tiles = coords.tiles;
+    const tileCoords = coords.tiles;
 
-    Promise.all(getTiles(tiles, getTile))
-        .then(data => {
-            if (!data) {
+    Promise.all(getTiles(tileCoords, getTile))
+        .then(tiles => {
+            if (!tiles || !tiles.length) {
                 throw new Error('No tiles to stitch.');
             }
 
-            const numTiles = data.length;
-            const renderTotal = data.map(d => d.stats.render || 0)
+            const numTiles = tiles.length;
+            const renderTotal = tiles.map(tile => tile.stats.render || 0)
                 .reduce((acc, renderTime) => acc + renderTime, 0);
 
             const stats = {
@@ -192,23 +192,17 @@ abaculus.stitchTiles = function (coords, format, quality, getTile, callback) {
                 renderAvg: Math.round(renderTotal / numTiles)
             };
 
-            const options = {
-                format: format,
-                quality: quality,
-                width: width,
-                height: height,
-                reencode: true
-            };
+            const options = { format, quality, width, height, reencode: true };
 
-            return blend(data, options)
-                .then(buffer => callback(null, buffer, stats));
+            return blend(tiles, options)
+                .then(preview => callback(null, preview, stats));
         })
         .catch(err => callback(err));
 };
 
-function getTiles (tiles, getTile) {
+function getTiles (tileCoords, getTile) {
     const getTilePromisified = promisify(getTile);
 
-    return tiles.map(({ z, x, y, px, py }) => getTilePromisified(z, x, y)
+    return tileCoords.map(({ z, x, y, px, py }) => getTilePromisified(z, x, y)
         .then((buffer, headers, stats = {}) => ({ buffer, headers, stats, x: px, y: py, reencode: true })));
 }
