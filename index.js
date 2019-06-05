@@ -148,11 +148,6 @@ function pointCoordinate(centerCoordinate, point, width, height, tileSize) {
 }
 
 function coordinatePoint(zoom, centerCoordinate, coord, width, height, tileSize) {
-    // Return an x, y point on the map image for a given coordinate.
-    if (coord.zoom != zoom) {
-        coord = coord.zoomTo(zoom);
-    }
-
     return {
         x: width / 2 + tileSize * (coord.column - centerCoordinate.column),
         y: height / 2 + tileSize * (coord.row - centerCoordinate.row)
@@ -166,7 +161,6 @@ function floorObj(obj) {
         zoom: obj.zoom
     };
 }
-
 
 abaculus.stitchTiles = function (coords, format, quality, getTile, callback) {
     if (!coords) {
