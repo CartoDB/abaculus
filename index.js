@@ -96,6 +96,10 @@ abaculus.tileList = function (zoom, scale, center, tileSize = 256) {
 
     for (let column = topLeft.column; column <= bottomRight.column; column++) {
         for (let row = topLeft.row; row <= bottomRight.row; row++) {
+            if (row < 0 || row >= maxTilesInRow) {
+                continue;
+            }
+
             const coord = {
                 column: column,
                 row: row,
@@ -108,10 +112,6 @@ abaculus.tileList = function (zoom, scale, center, tileSize = 256) {
 
             if (coord.column < 0) {
                 coord.column = maxTilesInRow + coord.column;
-            }
-
-            if (coord.row < 0 || coord.row >= maxTilesInRow) {
-                continue;
             }
 
             coords.push({
