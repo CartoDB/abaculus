@@ -3,7 +3,6 @@
 const { promisify } = require('util');
 const SphericalMercator = require('sphericalmercator');
 const blend = promisify(require('@carto/mapnik').blend);
-const crypto = require('crypto');
 
 module.exports = abaculus;
 
@@ -253,25 +252,6 @@ function headerReduce(headers, format) {
     }
 
     composed['Last-Modified'] = (new Date(Math.max.apply(Math, times))).toUTCString();
-
-    const etag = headers.reduce(function(memo, h) {
-        if (!h) {
-            return memo;
-        }
-
-        for (const k in h) if (k.toLowerCase() === 'etag') {
-            memo.push(h[k]);
-            return memo;
-        }
-
-        return memo;
-    }, []);
-
-    if (!etag.length) {
-        composed['ETag'] = '"' + crypto.createHash('md5').update(composed['Last-Modified']).digest('hex') + '"';
-    } else {
-        composed['ETag'] = etag.length === 1 ? etag[0] : '"' + crypto.createHash('md5').update(etag.join(',')).digest('hex') + '"';
-    }
 
     return composed;
 }
