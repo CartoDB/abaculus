@@ -81,7 +81,6 @@ abaculus.coordsFromCenter = function (zoom, scale, center, limit, tileSize) {
 // x, y are center coordinates in pixels
 abaculus.tileList = function (zoom, scale, center, tileSize = 256) {
     const { x, y, width, height } = center;
-    const dimensions = { x: width, y: height };
     const size = Math.floor(tileSize * scale);
 
     const centerCoordinate = {
@@ -92,7 +91,7 @@ abaculus.tileList = function (zoom, scale, center, tileSize = 256) {
 
     const maxTilesInRow = Math.pow(2, zoom);
     const topLeft = pointToCoordinate(centerCoordinate, { x: 0, y:0 }, width, height, size);
-    const bottomRight = pointToCoordinate(centerCoordinate, dimensions, width, height, size);
+    const bottomRight = pointToCoordinate(centerCoordinate, { x: width, y: height }, width, height, size);
     const coords = {};
 
     coords.tiles = [];
@@ -127,13 +126,7 @@ abaculus.tileList = function (zoom, scale, center, tileSize = 256) {
         }
     }
 
-    coords.dimensions = dimensions;
-    coords.center = {
-        row: Math.floor(centerCoordinate.row),
-        column: Math.floor(centerCoordinate.column),
-        zoom
-    };
-    coords.scale = scale;
+    coords.dimensions = { x: width, y: height };
 
     return coords;
 };
