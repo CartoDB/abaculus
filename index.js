@@ -104,7 +104,7 @@ abaculus.tileList = function (zoom, scale, center, tileSize = 256) {
                 row: row,
                 zoom,
             };
-            const point = coordinatePoint(zoom, centerCoordinate, coord, width, height, size);
+            const point = coordinatePoint(centerCoordinate, coord, width, height, size);
 
             // Wrap tiles with negative coordinates.
             coord.column = coord.column % maxTilesInRow;
@@ -147,7 +147,7 @@ function pointCoordinate(centerCoordinate, point, width, height, tileSize) {
     return coord;
 }
 
-function coordinatePoint(zoom, centerCoordinate, coord, width, height, tileSize) {
+function coordinatePoint(centerCoordinate, coord, width, height, tileSize) {
     return {
         x: width / 2 + tileSize * (coord.column - centerCoordinate.column),
         y: height / 2 + tileSize * (coord.row - centerCoordinate.row)
