@@ -32,7 +32,7 @@ function abaculus (options, callback) {
     const coords = abaculus.tileList(zoom, scale, center, tileSize);
 
     // get tiles based on coordinate list and stitch them together
-    abaculus.stitchTiles(coords, format, quality, getTile, callback);
+    abaculus.stitchTiles(coords, center, format, quality, getTile, callback);
 }
 
 abaculus.coordsFromBbox = function (zoom, scale, bbox, limit, tileSize) {
@@ -92,9 +92,7 @@ abaculus.tileList = function (zoom, scale, center, tileSize = 256) {
     const maxTilesInRow = Math.pow(2, zoom);
     const topLeft = pointToCoordinate(centerCoordinate, { x: 0, y:0 }, width, height, size);
     const bottomRight = pointToCoordinate(centerCoordinate, { x: width, y: height }, width, height, size);
-    const coords = {};
-
-    coords.tiles = [];
+    const coords = [];
 
     for (let column = topLeft.column; column <= bottomRight.column; column++) {
         for (let row = topLeft.row; row <= bottomRight.row; row++) {
@@ -116,7 +114,7 @@ abaculus.tileList = function (zoom, scale, center, tileSize = 256) {
                 continue;
             }
 
-            coords.tiles.push({
+            coords.push({
                 z: coord.zoom,
                 x: coord.column,
                 y: coord.row,
@@ -125,8 +123,6 @@ abaculus.tileList = function (zoom, scale, center, tileSize = 256) {
             });
         }
     }
-
-    coords.dimensions = { x: width, y: height };
 
     return coords;
 };
@@ -150,16 +146,14 @@ function coordinateToPoint(centerCoordinate, coord, width, height, tileSize) {
     return point;
 }
 
-abaculus.stitchTiles = function (coords, format, quality, getTile, callback) {
+abaculus.stitchTiles = function (coords, center, format, quality, getTile, callback) {
     if (!coords) {
         return callback(new Error('No coords object.'));
     }
 
-    const width = coords.dimensions.x;
-    const height = coords.dimensions.y;
-    const tileCoords = coords.tiles;
+    const { width, height } = center;
 
-    Promise.all(getTiles(tileCoords, getTile))
+    Promise.all(getTiles(coords, getTile))
         .then(tiles => {
             if (!tiles || !tiles.length) {
                 throw new Error('No tiles to stitch.');

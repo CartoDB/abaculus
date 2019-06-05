@@ -94,15 +94,12 @@ describe('create list of tile coordinates', function() {
             height = 1832,
             center = { x: 4096, y: 4096, width: width, height: height };
 
-        var expectedCoords = {
-            tiles: [
-                { z: zoom, x: 15, y: 15, px: -112, py: -108 },
-                { z: zoom, x: 15, y: 16, px: -112, py: 916 },
-                { z: zoom, x: 16, y: 15, px: 912, py: -108 },
-                { z: zoom, x: 16, y: 16, px: 912, py: 916 }
-            ],
-            dimensions: { x: width, y: height }
-        };
+        var expectedCoords = [
+            { z: zoom, x: 15, y: 15, px: -112, py: -108 },
+            { z: zoom, x: 15, y: 16, px: -112, py: 916 },
+            { z: zoom, x: 16, y: 15, px: 912, py: -108 },
+            { z: zoom, x: 16, y: 16, px: 912, py: 916 }
+        ];
         var coords = printer.tileList(zoom, scale, center);
         assert.deepEqual(JSON.stringify(coords), JSON.stringify(expectedCoords));
     });
@@ -114,31 +111,29 @@ describe('create list of tile coordinates', function() {
             height = 1000,
             center = {x: 623, y: 552, width: width, height: height};
 
-        var expectedCoords = {
-            tiles: [
-                { z: zoom, x: 0, y: 0, px: -123, py: -52 },
-                { z: zoom, x: 0, y: 1, px: -123, py: 204 },
-                { z: zoom, x: 0, y: 2, px: -123, py: 460 },
-                { z: zoom, x: 0, y: 3, px: -123, py: 716 },
-                { z: zoom, x: 1, y: 0, px:  133, py: -52 },
-                { z: zoom, x: 1, y: 1, px:  133, py: 204 },
-                { z: zoom, x: 1, y: 2, px:  133, py: 460 },
-                { z: zoom, x: 1, y: 3, px:  133, py: 716 },
-                { z: zoom, x: 2, y: 0, px:  389, py: -52 },
-                { z: zoom, x: 2, y: 1, px:  389, py: 204 },
-                { z: zoom, x: 2, y: 2, px:  389, py: 460 },
-                { z: zoom, x: 2, y: 3, px:  389, py: 716 },
-                { z: zoom, x: 3, y: 0, px:  645, py: -52 },
-                { z: zoom, x: 3, y: 1, px:  645, py: 204 },
-                { z: zoom, x: 3, y: 2, px:  645, py: 460 },
-                { z: zoom, x: 3, y: 3, px:  645, py: 716 },
-                { z: zoom, x: 0, y: 0, px:  901, py: -52 },
-                { z: zoom, x: 0, y: 1, px:  901, py: 204 },
-                { z: zoom, x: 0, y: 2, px:  901, py: 460 },
-                { z: zoom, x: 0, y: 3, px:  901, py: 716 }
-            ],
-            dimensions: {x: width, y: height}
-        };
+        var expectedCoords = [
+            { z: zoom, x: 0, y: 0, px: -123, py: -52 },
+            { z: zoom, x: 0, y: 1, px: -123, py: 204 },
+            { z: zoom, x: 0, y: 2, px: -123, py: 460 },
+            { z: zoom, x: 0, y: 3, px: -123, py: 716 },
+            { z: zoom, x: 1, y: 0, px:  133, py: -52 },
+            { z: zoom, x: 1, y: 1, px:  133, py: 204 },
+            { z: zoom, x: 1, y: 2, px:  133, py: 460 },
+            { z: zoom, x: 1, y: 3, px:  133, py: 716 },
+            { z: zoom, x: 2, y: 0, px:  389, py: -52 },
+            { z: zoom, x: 2, y: 1, px:  389, py: 204 },
+            { z: zoom, x: 2, y: 2, px:  389, py: 460 },
+            { z: zoom, x: 2, y: 3, px:  389, py: 716 },
+            { z: zoom, x: 3, y: 0, px:  645, py: -52 },
+            { z: zoom, x: 3, y: 1, px:  645, py: 204 },
+            { z: zoom, x: 3, y: 2, px:  645, py: 460 },
+            { z: zoom, x: 3, y: 3, px:  645, py: 716 },
+            { z: zoom, x: 0, y: 0, px:  901, py: -52 },
+            { z: zoom, x: 0, y: 1, px:  901, py: 204 },
+            { z: zoom, x: 0, y: 2, px:  901, py: 460 },
+            { z: zoom, x: 0, y: 3, px:  901, py: 716 }
+        ];
+
         var coords = printer.tileList(zoom, scale, center);
         assert.deepEqual(JSON.stringify(coords), JSON.stringify(expectedCoords));
     });
@@ -150,29 +145,27 @@ describe('create list of tile coordinates', function() {
             height = 2100,
             center = {x: 100, y: 100, width: width, height: height};
 
-        var expectedCoords = {
-            tiles: [
-                {z: zoom, x: 0, y: 0, px: -124, py: 950},
-                {z: zoom, x: 0, y: 1, px: -124, py: 1206},
-                {z: zoom, x: 1, y: 0, px: 132, py: 950},
-                {z: zoom, x: 1, y: 1, px: 132, py: 1206},
-                {z: zoom, x: 0, y: 0, px: 388, py: 950},
-                {z: zoom, x: 0, y: 1, px: 388, py: 1206},
-                {z: zoom, x: 1, y: 0, px: 644, py: 950},
-                {z: zoom, x: 1, y: 1, px: 644, py: 1206},
-                {z: zoom, x: 0, y: 0, px: 900, py: 950},
-                {z: zoom, x: 0, y: 1, px: 900, py: 1206},
-                {z: zoom, x: 1, y: 0, px: 1156, py: 950},
-                {z: zoom, x: 1, y: 1, px: 1156, py: 1206},
-                {z: zoom, x: 0, y: 0, px: 1412, py: 950},
-                {z: zoom, x: 0, y: 1, px: 1412, py: 1206},
-                {z: zoom, x: 1, y: 0, px: 1668, py: 950},
-                {z: zoom, x: 1, y: 1, px: 1668, py: 1206},
-                {z: zoom, x: 0, y: 0, px: 1924, py: 950},
-                {z: zoom, x: 0, y: 1, px: 1924, py: 1206}
-            ],
-            dimensions: {x: width, y: height}
-        };
+        var expectedCoords = [
+            {z: zoom, x: 0, y: 0, px: -124, py: 950},
+            {z: zoom, x: 0, y: 1, px: -124, py: 1206},
+            {z: zoom, x: 1, y: 0, px: 132, py: 950},
+            {z: zoom, x: 1, y: 1, px: 132, py: 1206},
+            {z: zoom, x: 0, y: 0, px: 388, py: 950},
+            {z: zoom, x: 0, y: 1, px: 388, py: 1206},
+            {z: zoom, x: 1, y: 0, px: 644, py: 950},
+            {z: zoom, x: 1, y: 1, px: 644, py: 1206},
+            {z: zoom, x: 0, y: 0, px: 900, py: 950},
+            {z: zoom, x: 0, y: 1, px: 900, py: 1206},
+            {z: zoom, x: 1, y: 0, px: 1156, py: 950},
+            {z: zoom, x: 1, y: 1, px: 1156, py: 1206},
+            {z: zoom, x: 0, y: 0, px: 1412, py: 950},
+            {z: zoom, x: 0, y: 1, px: 1412, py: 1206},
+            {z: zoom, x: 1, y: 0, px: 1668, py: 950},
+            {z: zoom, x: 1, y: 1, px: 1668, py: 1206},
+            {z: zoom, x: 0, y: 0, px: 1924, py: 950},
+            {z: zoom, x: 0, y: 1, px: 1924, py: 1206}
+        ];
+
         var coords = printer.tileList(zoom, scale, center);
         assert.deepEqual(JSON.stringify(coords), JSON.stringify(expectedCoords));
     });
@@ -180,24 +173,20 @@ describe('create list of tile coordinates', function() {
 
 [256, 512, 1024].forEach(function(size) {
     describe('stitch tiles into single png', function() {
-        var expectedCoords = {
-            tiles: [
-                { z: 1, x: 0, y: 0, px: 0, py: 0 },
-                { z: 1, x: 0, y: 1, px: 0, py: size },
-                { z: 1, x: 1, y: 0, px: size, py: 0 },
-                { z: 1, x: 1, y: 1, px: size, py: size }
-            ],
-            dimensions: {
-                x: size * 2,
-                y: size * 2
-            },
-            center: { row: 1, column: 1, zoom: 1 },
-            scale: 1,
-            tileSize: size
-        };
+        var coords = [
+            { z: 1, x: 0, y: 0, px: 0, py: 0 },
+            { z: 1, x: 0, y: 1, px: 0, py: size },
+            { z: 1, x: 1, y: 0, px: size, py: 0 },
+            { z: 1, x: 1, y: 1, px: size, py: size }
+        ];
+
+        var center = {
+            width: size * 2,
+            height: size * 2
+        }
 
         it('should fail if no coordinates object', function(done) {
-            printer.stitchTiles(null, format, quality, function() {}, function(err) {
+            printer.stitchTiles(null, center, format, quality, function() {}, function(err) {
                 assert.equal(err.message, 'No coords object.');
                 done();
             });
@@ -206,7 +195,7 @@ describe('create list of tile coordinates', function() {
         it('should return tiles and stitch them together', function(done) {
             var expectedImage = fs.readFileSync(path.resolve(__dirname + '/expected/expected.' + size + '.png'));
 
-            printer.stitchTiles(expectedCoords, format, quality, getTileTest, function(err, image, header) {
+            printer.stitchTiles(coords, center, format, quality, getTileTest, function(err, image, header) {
                 fs.writeFile(__dirname + '/outputs/expected.' + size + '.png', image, function(err){
                     checkImage(image, expectedImage);
                     done();
