@@ -189,19 +189,10 @@ abaculus.stitchTiles = function (coords, format, quality, getTile, callback) {
                 throw new Error('No tiles to stitch.');
             }
 
-            const headers = [];
-            data.forEach(function(d) {
-                headers.push(d.headers);
-            });
-
             const numTiles = data.length;
-            const renderTotal = data
-                .map(function(d) {
-                    return d.stats.render || 0;
-                })
-                .reduce(function(acc, renderTime) {
-                    return acc + renderTime;
-                }, 0);
+            const headers = data.map(d => d.headers);
+            const renderTotal = data.map(d => d.stats.render || 0)
+                .reduce((acc, renderTime) => acc + renderTime, 0);
 
             const stats = {
                 tiles: numTiles,
