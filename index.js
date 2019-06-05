@@ -180,5 +180,5 @@ function getTiles (tileCoords, getTile) {
     const getTilePromisified = promisify(getTile);
 
     return tileCoords.map(({ z, x, y, px, py }) => getTilePromisified(z, x, y)
-        .then((buffer, headers, stats = {}) => ({ buffer, headers, stats, x: px, y: py, reencode: true })));
+        .then((buffer, headers, stats = {}) => ({ buffer, stats, x: px, y: py })));
 }
