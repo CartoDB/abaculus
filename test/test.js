@@ -13,8 +13,8 @@ var zoom = 5,
     y = 4096,
     quality = 256,
     format = 'png',
-    limit = 19008;
-
+    limit = 19008,
+    tileSize = 256;
 
 // fixtures
 var tiles = fs.readdirSync(path.resolve(__dirname + '/fixtures/')).reduce(function(memo, basename) {
@@ -28,7 +28,7 @@ describe('Get center from bbox', function() {
         var bbox = [0, 0, 0, 0];
 
         assert.throws( function() {
-            printer.coordsFromBbox(zoom, scale, bbox, limit);
+            printer.coordsFromBbox(zoom, scale, bbox, limit, tileSize);
         }, /Incorrect coordinates/);
     });
     it('should fail if the image is too large', function() {
@@ -40,10 +40,11 @@ describe('Get center from bbox', function() {
     });
     it('should return the correct coordinates', function() {
         var bbox = [-60, -60, 60, 60];
+        var scale = 1;
 
-        var center = printer.coordsFromBbox(zoom, scale, bbox, limit);
-        assert.deepEqual(center.width, 10920);
-        assert.deepEqual(center.height, 13736);
+        var center = printer.coordsFromBbox(zoom, scale, bbox, limit, tileSize);
+        assert.deepEqual(center.width, 2730);
+        assert.deepEqual(center.height, 3434);
         assert.deepEqual(center.x, x);
         assert.deepEqual(center.y, y);
     });
@@ -58,21 +59,23 @@ describe('get coordinates from center', function() {
             height: 4752
         };
         assert.throws( function() {
-            printer.coordsFromCenter(zoom, scale, center, limit);
+            printer.coordsFromCenter(zoom, scale, center, limit, tileSize);
         }, /Desired image is too large./);
     });
     it('should return correct origin coords', function() {
+        var scale = 1;
         var center = {
             x: 0,
             y: 20,
             width: 800,
             height: 800
         };
-        center = printer.coordsFromCenter(zoom, scale, center, limit);
+        center = printer.coordsFromCenter(zoom, scale, center, limit, tileSize);
         assert.equal(center.x, x);
         assert.equal(center.y, 3631);
     });
     it('should return correct origin coords for negative y', function() {
+        var scale = 1;
         var zoom = 2,
             center = {
                 x: 39,
@@ -80,7 +83,7 @@ describe('get coordinates from center', function() {
                 width: 1000,
                 height: 1000
             };
-        center = printer.coordsFromCenter(zoom, scale, center, limit);
+        center = printer.coordsFromCenter(zoom, scale, center, limit, tileSize);
         assert.equal(center.x, 623);
         assert.equal(center.y, 552);
     });

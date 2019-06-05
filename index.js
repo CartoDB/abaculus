@@ -39,20 +39,19 @@ abaculus.coordsFromBbox = function (zoom, scale, bbox, limit, tileSize) {
     const sphericalMercator = new SphericalMercator({ size: tileSize * scale });
     const bottomLeft = sphericalMercator.px([bbox[0], bbox[1]], zoom);
     const topRight = sphericalMercator.px([bbox[2], bbox[3]], zoom);
-    const center = {};
+    const width = topRight[0] - bottomLeft[0];
+    const height = bottomLeft[1] - topRight[1];
 
-    center.width = topRight[0] - bottomLeft[0];
-    center.height = bottomLeft[1] - topRight[1];
-
-    if (center.width <= 0 || center.height <= 0) {
+    if (width <= 0 || height <= 0) {
         throw new Error('Incorrect coordinates');
     }
 
-    const origin = [topRight[0] - center.width / 2, topRight[1] + center.height / 2];
-    center.x = origin[0];
-    center.y = origin[1];
-    center.width = Math.round(center.width * scale);
-    center.height = Math.round(center.height * scale);
+    const center = {
+        x: topRight[0] - width / 2,
+        y: topRight[1] + height / 2,
+        width: Math.round(width * scale),
+        height: Math.round(height * scale)
+    };
 
     if (center.width >= limit || center.height >= limit) {
         throw new Error('Desired image is too large.');
@@ -171,7 +170,7 @@ abaculus.stitchTiles = function (coords, center, format, quality, getTile, callb
             const options = { format, quality, width, height, reencode: true };
 
             return blend(tiles, options)
-                .then(preview => callback(null, preview, stats));
+                .then(image => callback(null, image, stats));
         })
         .catch(err => callback(err));
 };
