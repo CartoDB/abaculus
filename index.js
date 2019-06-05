@@ -46,34 +46,36 @@ abaculus.coordsFromBbox = function (zoom, scale, bbox, limit, tileSize) {
         throw new Error('Incorrect coordinates');
     }
 
-    const center = {
+    const coords = {
         x: topRight[0] - width / 2,
         y: topRight[1] + height / 2,
         width: Math.round(width * scale),
         height: Math.round(height * scale)
     };
 
-    if (center.width >= limit || center.height >= limit) {
+    if (coords.width >= limit || coords.height >= limit) {
         throw new Error('Desired image is too large.');
     }
 
-    return center;
+    return coords;
 };
 
 abaculus.coordsFromCenter = function (zoom, scale, center, limit, tileSize) {
     const sphericalMercator = new SphericalMercator({ size: tileSize * scale });
     const origin = sphericalMercator.px([center.x, center.y], zoom);
 
-    center.x = origin[0];
-    center.y = origin[1];
-    center.width = Math.round(center.width * scale);
-    center.height = Math.round(center.height * scale);
+    const coords = {
+        x: origin[0],
+        y: origin[1],
+        width: Math.round(center.width * scale),
+        height: Math.round(center.height * scale)
+    };
 
-    if (center.width >= limit || center.height >= limit) {
+    if (coords.width >= limit || coords.height >= limit) {
         throw new Error('Desired image is too large.');
     }
 
-    return center;
+    return coords;
 };
 
 // Generate the zxy and px/py offsets needed for each tile in a static image.
