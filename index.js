@@ -62,11 +62,11 @@ abaculus.coordsFromBbox = function (zoom, scale, bbox, limit, tileSize) {
 
 abaculus.coordsFromCenter = function (zoom, scale, center, limit, tileSize) {
     const sphericalMercator = new SphericalMercator({ size: tileSize * scale });
-    const origin = sphericalMercator.px([center.x, center.y], zoom);
+    const centerInPx = sphericalMercator.px([center.x, center.y], zoom);
 
     const coords = {
-        x: origin[0],
-        y: origin[1],
+        x: centerInPx[0],
+        y: centerInPx[1],
         width: Math.round(center.width * scale),
         height: Math.round(center.height * scale)
     };
