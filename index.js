@@ -177,12 +177,7 @@ abaculus.stitchTiles = function (coords, format, quality, getTile, callback) {
     const height = coords.dimensions.y;
     const tiles = coords.tiles;
 
-    getTile = promisify(getTile);
-
-    const fetchings = tiles.map(({ z, x, y, px, py }) => getTile(z, x, y)
-        .then((buffer, headers, stats = {}) => ({ buffer, headers, stats, x: px, y: py, reencode: true })));
-
-    Promise.all(fetchings)
+    Promise.all(getTiles(tiles, getTile))
         .then(data => {
             if (!data) {
                 throw new Error('No tiles to stitch.');
@@ -210,3 +205,10 @@ abaculus.stitchTiles = function (coords, format, quality, getTile, callback) {
         })
         .catch(err => callback(err));
 };
+
+function getTiles (tiles, getTile) {
+    const getTilePromisified = promisify(getTile);
+
+    return tiles.map(({ z, x, y, px, py }) => getTilePromisified(z, x, y)
+        .then((buffer, headers, stats = {}) => ({ buffer, headers, stats, x: px, y: py, reencode: true })));
+}
