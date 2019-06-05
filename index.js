@@ -189,7 +189,6 @@ abaculus.stitchTiles = function (coords, format, quality, getTile, callback) {
             }
 
             const numTiles = data.length;
-            const headers = data.map(d => d.headers);
             const renderTotal = data.map(d => d.stats.render || 0)
                 .reduce((acc, renderTime) => acc + renderTime, 0);
 
@@ -207,51 +206,7 @@ abaculus.stitchTiles = function (coords, format, quality, getTile, callback) {
             };
 
             return blend(data, options)
-                .then(buffer =>  callback(null, buffer, headerReduce(headers, format), stats));
+                .then(buffer => callback(null, buffer, stats));
         })
         .catch(err => callback(err));
 };
-
-// Calculate TTL from newest (max mtime) layer.
-function headerReduce(headers, format) {
-    const minmtime = new Date('Sun, 23 Feb 2014 18:00:00 UTC');
-    const composed = {};
-
-    composed['Cache-Control'] = 'max-age=3600';
-
-    switch (format) {
-    case 'vector.pbf':
-        composed['Content-Type'] = 'application/x-protobuf';
-        composed['Content-Encoding'] = 'deflate';
-        break;
-    case 'jpeg':
-        composed['Content-Type'] = 'image/jpeg';
-        break;
-    case 'png':
-        composed['Content-Type'] = 'image/png';
-        break;
-    }
-
-    const times = headers.reduce(function(memo, h) {
-        if (!h) {
-            return memo;
-        }
-
-        for (const k in h) if (k.toLowerCase() === 'last-modified') {
-            memo.push(new Date(h[k]));
-            return memo;
-        }
-
-        return memo;
-    }, []);
-
-    if (!times.length) {
-        times.push(new Date());
-    } else {
-        times.push(minmtime);
-    }
-
-    composed['Last-Modified'] = (new Date(Math.max.apply(Math, times))).toUTCString();
-
-    return composed;
-}
