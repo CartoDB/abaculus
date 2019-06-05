@@ -91,8 +91,8 @@ abaculus.tileList = function (zoom, scale, center, tileSize = 256) {
     };
 
     const maxTilesInRow = Math.pow(2, zoom);
-    const topLeft = floorObj(pointCoordinate(centerCoordinate, { x: 0, y:0 }, width, height, size));
-    const bottomRight = floorObj(pointCoordinate(centerCoordinate, dimensions, width, height, size));
+    const topLeft = pointToCoordinate(centerCoordinate, { x: 0, y:0 }, width, height, size);
+    const bottomRight = pointToCoordinate(centerCoordinate, dimensions, width, height, size);
     const coords = {};
 
     coords.tiles = [];
@@ -104,7 +104,7 @@ abaculus.tileList = function (zoom, scale, center, tileSize = 256) {
                 row: row,
                 zoom,
             };
-            const point = coordinatePoint(centerCoordinate, coord, width, height, size);
+            const point = coordinateToPoint(centerCoordinate, coord, width, height, size);
 
             // Wrap tiles with negative coordinates.
             coord.column = coord.column % maxTilesInRow;
@@ -127,39 +127,34 @@ abaculus.tileList = function (zoom, scale, center, tileSize = 256) {
         }
     }
 
-    coords.dimensions = { x: width, y: height };
-    coords.center = floorObj(centerCoordinate);
+    coords.dimensions = dimensions;
+    coords.center = {
+        row: Math.floor(centerCoordinate.row),
+        column: Math.floor(centerCoordinate.column),
+        zoom
+    };
     coords.scale = scale;
 
     return coords;
 };
 
-function pointCoordinate(centerCoordinate, point, width, height, tileSize) {
+function pointToCoordinate(centerCoordinate, point, width, height, tileSize) {
     const coord = {
-        column: centerCoordinate.column,
-        row: centerCoordinate.row,
+        column: Math.floor(centerCoordinate.column + ((point.x - width / 2) / tileSize)),
+        row: Math.floor(centerCoordinate.row + ((point.y - height / 2) / tileSize)),
         zoom: centerCoordinate.zoom,
     };
-
-    coord.column += (point.x - width / 2) / tileSize;
-    coord.row += (point.y - height / 2) / tileSize;
 
     return coord;
 }
 
-function coordinatePoint(centerCoordinate, coord, width, height, tileSize) {
-    return {
+function coordinateToPoint(centerCoordinate, coord, width, height, tileSize) {
+    const point = {
         x: width / 2 + tileSize * (coord.column - centerCoordinate.column),
         y: height / 2 + tileSize * (coord.row - centerCoordinate.row)
     };
-}
 
-function floorObj(obj) {
-    return {
-        row: Math.floor(obj.row),
-        column: Math.floor(obj.column),
-        zoom: obj.zoom
-    };
+    return point;
 }
 
 abaculus.stitchTiles = function (coords, format, quality, getTile, callback) {
