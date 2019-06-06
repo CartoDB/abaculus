@@ -78,17 +78,16 @@ abaculus.getCenterInPixelsFromBbox = function (bbox, zoom, scale, tileSize) {
 }
 
 abaculus.scaleDimensions = function (dimensions, scale, limit) {
-    const { width, height } = dimensions;
-    const dims = {
-        width: Math.round(width * scale),
-        height: Math.round(height * scale)
-    };
+    const { width: _width, height: _height } = dimensions;
 
-    if (dims.width >= limit || dims.height >= limit) {
+    const width = Math.round(_width * scale);
+    const height = Math.round(_height * scale);
+
+    if (width >= limit || height >= limit) {
         throw new Error('Desired image is too large.');
     }
 
-    return dims;
+    return { width, height };
 }
 
 abaculus.getCenterInPixels = function (center, zoom, scale, tileSize) {
