@@ -25,7 +25,7 @@ async function abaculus (options) {
 
     const center = options.bbox ?
         // get center coordinates in px from [w,s,e,n] bbox
-        abaculus.getCenterFromBbox(options.bbox, zoom, scale, tileSize) :
+        abaculus.getCenterInPixelsFromBbox(options.bbox, zoom, scale, tileSize) :
         // get center coordinates in px from lng,lat
         abaculus.getCenterInPixels(options.center, zoom, scale, tileSize);
 
@@ -64,7 +64,7 @@ abaculus.getDimensionsFromBbox = function (bbox, zoom, scale, tileSize, limit) {
     return { width, height };
 }
 
-abaculus.getCenterFromBbox = function (bbox, zoom, scale, tileSize) {
+abaculus.getCenterInPixelsFromBbox = function (bbox, zoom, scale, tileSize) {
     const sphericalMercator = new SphericalMercator({ size: tileSize * scale });
     const bottomLeft = sphericalMercator.px([bbox[0], bbox[1]], zoom);
     const topRight = sphericalMercator.px([bbox[2], bbox[3]], zoom);

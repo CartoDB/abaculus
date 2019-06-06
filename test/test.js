@@ -49,7 +49,7 @@ describe('Get center from bbox', function() {
         var scale = 1;
 
         const center = printer.getDimensionsFromBbox(bbox, zoom, scale, tileSize, limit);
-        const dimensions = printer.getCenterFromBbox(bbox, zoom, scale, tileSize);
+        const dimensions = printer.getCenterInPixelsFromBbox(bbox, zoom, scale, tileSize);
 
         assert.deepEqual(center.width, 2730);
         assert.deepEqual(center.height, 3434);
