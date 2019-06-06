@@ -31,25 +31,30 @@ describe('Get center from bbox', function() {
         var bbox = [0, 0, 0, 0];
 
         assert.throws( function() {
-            printer.coordsFromBbox(zoom, scale, bbox, limit, tileSize);
+            printer.getDimensionsFromBbox(bbox, zoom, scale, tileSize, limit);
         }, /Incorrect coordinates/);
     });
     it('should fail if the image is too large', function() {
         var bbox = [-60, -60, 60, 60];
+        const zoom = 7;
+        const scale = 2;
 
         assert.throws( function() {
-            printer.coordsFromBbox(7, 2, bbox, limit);
+            printer.getDimensionsFromBbox(bbox, zoom, scale, tileSize, limit);
         }, /Desired image is too large./);
     });
+
     it('should return the correct coordinates', function() {
         var bbox = [-60, -60, 60, 60];
         var scale = 1;
 
-        var center = printer.coordsFromBbox(zoom, scale, bbox, limit, tileSize);
+        const center = printer.getDimensionsFromBbox(bbox, zoom, scale, tileSize, limit);
+        const dimensions = printer.getCenterFromBbox(bbox, zoom, scale, tileSize);
+
         assert.deepEqual(center.width, 2730);
         assert.deepEqual(center.height, 3434);
-        assert.deepEqual(center.x, x);
-        assert.deepEqual(center.y, y);
+        assert.deepEqual(dimensions.x, x);
+        assert.deepEqual(dimensions.y, y);
     });
 });
 
@@ -57,36 +62,36 @@ describe('get coordinates from center', function() {
     it('should should fail if the image is too large', function() {
         var center = {
             x: 0,
-            y: 0,
+            y: 0
+        };
+        var dimensions = {
             width: 4752,
             height: 4752
         };
-        assert.throws( function() {
-            printer.coordsFromCenter(zoom, scale, center, limit, tileSize);
+        assert.throws(function () {
+            printer.scaleDimensions(dimensions, scale, limit);
         }, /Desired image is too large./);
     });
     it('should return correct origin coords', function() {
         var scale = 1;
         var center = {
             x: 0,
-            y: 20,
-            width: 800,
-            height: 800
+            y: 20
         };
-        center = printer.coordsFromCenter(zoom, scale, center, limit, tileSize);
+        center = printer.getCenterInPixels(center, zoom, scale, tileSize);
         assert.equal(center.x, x);
         assert.equal(center.y, 3631);
     });
     it('should return correct origin coords for negative y', function() {
         var scale = 1;
-        var zoom = 2,
-            center = {
-                x: 39,
-                y: -14,
-                width: 1000,
-                height: 1000
-            };
-        center = printer.coordsFromCenter(zoom, scale, center, limit, tileSize);
+        var zoom = 2;
+        var center = {
+            x: 39,
+            y: -14
+        };
+
+        center = printer.getCenterInPixels(center, zoom, scale, tileSize);
+
         assert.equal(center.x, 623);
         assert.equal(center.y, 552);
     });
@@ -98,7 +103,8 @@ describe('create list of tile coordinates', function() {
             scale = 4,
             width = 1824,
             height = 1832,
-            center = { x: 4096, y: 4096, width: width, height: height };
+            center = { x: 4096, y: 4096 },
+            dimensions = { width, height };
 
         var expectedCoords = [
             { z: zoom, x: 15, y: 15, px: -112, py: -108 },
@@ -106,7 +112,7 @@ describe('create list of tile coordinates', function() {
             { z: zoom, x: 16, y: 15, px: 912, py: -108 },
             { z: zoom, x: 16, y: 16, px: 912, py: 916 }
         ];
-        var coords = printer.tileList(zoom, scale, center, tileSize);
+        var coords = printer.tileList(zoom, scale, center, dimensions, tileSize);
         assert.deepEqual(JSON.stringify(coords), JSON.stringify(expectedCoords));
     });
 
@@ -115,7 +121,8 @@ describe('create list of tile coordinates', function() {
             scale = 1,
             width = 1000,
             height = 1000,
-            center = {x: 623, y: 552, width: width, height: height};
+            center = {x: 623, y: 552 },
+            dimensions = { width, height };
 
         var expectedCoords = [
             { z: zoom, x: 0, y: 0, px: -123, py: -52 },
@@ -140,7 +147,7 @@ describe('create list of tile coordinates', function() {
             { z: zoom, x: 0, y: 3, px:  901, py: 716 }
         ];
 
-        var coords = printer.tileList(zoom, scale, center, tileSize);
+        var coords = printer.tileList(zoom, scale, center, dimensions, tileSize);
         assert.deepEqual(JSON.stringify(coords), JSON.stringify(expectedCoords));
     });
 
@@ -149,7 +156,8 @@ describe('create list of tile coordinates', function() {
             scale = 1,
             width = 2000,
             height = 2100,
-            center = {x: 100, y: 100, width: width, height: height};
+            center = { x: 100, y: 100 },
+            dimensions = { width, height };
 
         var expectedCoords = [
             {z: zoom, x: 0, y: 0, px: -124, py: 950},
@@ -172,7 +180,7 @@ describe('create list of tile coordinates', function() {
             {z: zoom, x: 0, y: 1, px: 1924, py: 1206}
         ];
 
-        var coords = printer.tileList(zoom, scale, center, tileSize);
+        var coords = printer.tileList(zoom, scale, center, dimensions, tileSize);
         assert.deepEqual(JSON.stringify(coords), JSON.stringify(expectedCoords));
     });
 });
@@ -220,7 +228,9 @@ describe('create list of tile coordinates', function() {
                 scale: 1,
                 center: {
                     x: 0,
-                    y: 0,
+                    y: 0
+                },
+                dimensions: {
                     width: 200,
                     height: 200
                 },

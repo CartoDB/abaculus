@@ -22,17 +22,19 @@ async function abaculus (options) {
     const quality = options.quality || null;
     const limit = options.limit || 19008;
     const tileSize = options.tileSize || 256;
-    const center = options.center ?
-        // get center coordinates in px from lng,lat
-        abaculus.coordsFromCenter(zoom, scale, options.center, limit, tileSize) :
+
+    const center = options.bbox ?
         // get center coordinates in px from [w,s,e,n] bbox
-        abaculus.coordsFromBbox(zoom, scale, options.bbox, limit, tileSize);
-    const { width, height } = center;
+        abaculus.getCenterFromBbox(options.bbox, zoom, scale, tileSize) :
+        // get center coordinates in px from lng,lat
+        abaculus.getCenterInPixels(options.center, zoom, scale, tileSize);
+
+    const dimensions = options.bbox ?
+        abaculus.getDimensionsFromBbox(options.bbox, zoom, scale, tileSize, limit) :
+        abaculus.scaleDimensions(options.dimensions, scale, limit);
 
     // generate list of tile coordinates center
-    const coords = abaculus.tileList(zoom, scale, center, tileSize);
-
-    const dimensions = { width, height };
+    const coords = abaculus.tileList(zoom, scale, center, dimensions, tileSize);
 
     // get tiles based on coordinate list and stitch them together
     const { image, stats } = await abaculus.stitchTiles(coords, dimensions, format, quality, getTile);
@@ -40,17 +42,11 @@ async function abaculus (options) {
     return { image, stats };
 }
 
-abaculus.coordsFromBbox = function (zoom, scale, bbox, limit, tileSize) {
-    const { width, height } = getDimensionsFromBbox(bbox, tileSize, scale, zoom, limit);
-    const { x, y } = getCenterFromBbox(bbox, tileSize, scale, zoom);
-
-    return { width, height, x, y };
-};
-
-function getDimensionsFromBbox (bbox, tileSize, scale, zoom, limit) {
+abaculus.getDimensionsFromBbox = function (bbox, zoom, scale, tileSize, limit) {
     const sphericalMercator = new SphericalMercator({ size: tileSize * scale });
     const bottomLeft = sphericalMercator.px([bbox[0], bbox[1]], zoom);
     const topRight = sphericalMercator.px([bbox[2], bbox[3]], zoom);
+
     let width = topRight[0] - bottomLeft[0];
     let height = bottomLeft[1] - topRight[1];
 
@@ -68,7 +64,7 @@ function getDimensionsFromBbox (bbox, tileSize, scale, zoom, limit) {
     return { width, height };
 }
 
-function getCenterFromBbox (bbox, tileSize, scale, zoom) {
+abaculus.getCenterFromBbox = function (bbox, zoom, scale, tileSize) {
     const sphericalMercator = new SphericalMercator({ size: tileSize * scale });
     const bottomLeft = sphericalMercator.px([bbox[0], bbox[1]], zoom);
     const topRight = sphericalMercator.px([bbox[2], bbox[3]], zoom);
@@ -81,31 +77,21 @@ function getCenterFromBbox (bbox, tileSize, scale, zoom) {
     };
 }
 
-abaculus.coordsFromCenter = function (zoom, scale, center, limit, tileSize) {
-    const { width, height } = getDimensionsFromCenter(zoom, scale, center, limit, tileSize);
-    const { x, y } = getCenterFromCenter(zoom, scale, center, tileSize);
-
-    return { width, height, x, y };
-};
-
-function getDimensionsFromCenter (zoom, scale, center, limit, tileSize) {
-    const { x, y, width, height } = center;
-    const sphericalMercator = new SphericalMercator({ size: tileSize * scale });
-    const centerInPx = sphericalMercator.px([x, y], zoom);
-
-    const dimensions = {
+abaculus.scaleDimensions = function (dimensions, scale, limit) {
+    const { width, height } = dimensions;
+    const dims = {
         width: Math.round(width * scale),
         height: Math.round(height * scale)
     };
 
-    if (dimensions.width >= limit || dimensions.height >= limit) {
+    if (dims.width >= limit || dims.height >= limit) {
         throw new Error('Desired image is too large.');
     }
 
-    return dimensions;
+    return dims;
 }
 
-function getCenterFromCenter(zoom, scale, center, tileSize) {
+abaculus.getCenterInPixels = function (center, zoom, scale, tileSize) {
     const sphericalMercator = new SphericalMercator({ size: tileSize * scale });
     const centerInPx = sphericalMercator.px([center.x, center.y], zoom);
 
@@ -117,8 +103,10 @@ function getCenterFromCenter(zoom, scale, center, tileSize) {
 
 // Generate the zxy and px/py offsets needed for each tile in a static image.
 // x, y are center coordinates in pixels
-abaculus.tileList = function (zoom, scale, center, tileSize) {
-    const { x, y, width, height } = center;
+abaculus.tileList = function (zoom, scale, center, dimensions, tileSize) {
+    const { x, y } = center;
+    const { width, height } = dimensions;
+
     const size = Math.floor(tileSize * scale);
 
     const centerCoordinate = {
