@@ -6,13 +6,13 @@ const blend = promisify(require('@carto/mapnik').blend);
 
 module.exports = abaculus;
 
-function abaculus (options, callback) {
+async function abaculus (options) {
     if (!options.getTile) {
-        return callback(new Error('Invalid function for getting tiles'));
+        throw new Error('Invalid function for getting tiles');
     }
 
     if (!options.center && !options.bbox) {
-        return callback(new Error('No coordinates provided.'));
+        throw new Error('No coordinates provided.');
     }
 
     const getTile = options.getTile;
@@ -32,7 +32,9 @@ function abaculus (options, callback) {
     const coords = abaculus.tileList(zoom, scale, center, tileSize);
 
     // get tiles based on coordinate list and stitch them together
-    abaculus.stitchTiles(coords, center, format, quality, getTile, callback);
+    const { image, stats } = await abaculus.stitchTiles(coords, center, format, quality, getTile);
+
+    return { image, stats };
 }
 
 abaculus.coordsFromBbox = function (zoom, scale, bbox, limit, tileSize) {
@@ -147,34 +149,33 @@ function coordinateToPoint(centerCoordinate, coord, width, height, tileSize) {
     return point;
 }
 
-abaculus.stitchTiles = function (coords, center, format, quality, getTile, callback) {
+abaculus.stitchTiles = async function (coords, center, format, quality, getTile) {
     if (!coords) {
-        return callback(new Error('No coords object.'));
+        throw new Error('No coords object.');
     }
 
     const { width, height } = center;
 
-    Promise.all(getTiles(coords, getTile))
-        .then(tiles => {
-            if (!tiles || !tiles.length) {
-                throw new Error('No tiles to stitch.');
-            }
+    const tiles = await Promise.all(getTiles(coords, getTile));
 
-            const numTiles = tiles.length;
-            const renderTotal = tiles.map(tile => tile.stats.render || 0)
-                .reduce((acc, renderTime) => acc + renderTime, 0);
+    if (!tiles || !tiles.length) {
+        throw new Error('No tiles to stitch.');
+    }
 
-            const stats = {
-                tiles: numTiles,
-                renderAvg: Math.round(renderTotal / numTiles)
-            };
+    const numTiles = tiles.length;
+    const renderTotal = tiles.map(tile => tile.stats.render || 0)
+        .reduce((acc, renderTime) => acc + renderTime, 0);
 
-            const options = { format, quality, width, height, reencode: true };
+    const stats = {
+        tiles: numTiles,
+        renderAvg: Math.round(renderTotal / numTiles)
+    };
 
-            return blend(tiles, options)
-                .then(image => callback(null, image, stats));
-        })
-        .catch(err => callback(err));
+    const options = { format, quality, width, height, reencode: true };
+
+    const image = await blend(tiles, options);
+
+    return { image, stats };
 };
 
 function getTiles (tileCoords, getTile) {

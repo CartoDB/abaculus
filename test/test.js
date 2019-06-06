@@ -5,6 +5,9 @@ var printer = require('../');
 var fs = require('fs');
 var path = require('path');
 var mapnik = require('@carto/mapnik');
+const { promisify } = require('util');
+const writeFile = promisify(fs.writeFile);
+const readFile = promisify(fs.readFile);
 
 // defaults
 var zoom = 5,
@@ -188,28 +191,29 @@ describe('create list of tile coordinates', function() {
             height: size * 2
         }
 
-        it('should fail if no coordinates object', function(done) {
-            printer.stitchTiles(null, center, format, quality, function() {}, function(err) {
+        it('should fail if no coordinates object', async function () {
+            try {
+                await printer.stitchTiles(null, center, format, quality, function() {});
+                throw new Error('Should not throw');
+            } catch (err) {
                 assert.equal(err.message, 'No coords object.');
-                done();
-            });
+            };
         });
 
-        it('should return tiles and stitch them together', function(done) {
-            var expectedImage = fs.readFileSync(path.resolve(__dirname + '/expected/expected.' + size + '.png'));
+        it('should return tiles and stitch them together', async function () {
+            var expectedImage = await readFile(path.resolve(__dirname + '/expected/expected.' + size + '.png'));
 
-            printer.stitchTiles(coords, center, format, quality, getTileTest, function(err, image, header) {
-                fs.writeFile(__dirname + '/outputs/expected.' + size + '.png', image, function(err){
-                    checkImage(image, expectedImage);
-                    done();
-                });
-            });
+            const { image } = await printer.stitchTiles(coords, center, format, quality, getTileTest);
+
+            await writeFile(__dirname + '/outputs/expected.' + size + '.png', image);
+
+            checkImage(image, expectedImage);
         });
     });
 
     describe('run entire function', function() {
-        it('stitches images with a center coordinate', function(done) {
-            var expectedImage = fs.readFileSync(path.resolve(__dirname + '/expected/center.' + size + '.png'));
+        it('stitches images with a center coordinate', async function () {
+            var expectedImage = await readFile(path.resolve(__dirname + '/expected/center.' + size + '.png'));
 
             var params = {
                 zoom: 1,
@@ -226,22 +230,18 @@ describe('create list of tile coordinates', function() {
                 getTile: getTileTest
             };
 
-            printer(params, function(err, image) {
-                assert.equal(err, null);
+            const { image } = await printer(params);
 
-                fs.writeFile(__dirname + '/outputs/center.' + size + '.png', image, function(err){
-                    assert.equal(err, null);
-                    console.log('\tVisually check image at '+ __dirname + '/outputs/center.' + size + '.png');
+            await writeFile(__dirname + '/outputs/center.' + size + '.png', image);
 
-                    // byte by byte check of image:
-                    checkImage(image, expectedImage);
-                    done();
-                });
-            });
+            console.log('\tVisually check image at '+ __dirname + '/outputs/center.' + size + '.png');
+
+            // byte by byte check of image:
+            checkImage(image, expectedImage);
         });
 
-        it('stitches images with a wsen bbox', function(done) {
-            var expectedImage = fs.readFileSync(path.resolve(__dirname + '/expected/bbox.' + size + '.png'));
+        it('stitches images with a wsen bbox', async function () {
+            var expectedImage = await readFile(path.resolve(__dirname + '/expected/bbox.' + size + '.png'));
 
             var params = {
                 zoom: 1,
@@ -253,17 +253,14 @@ describe('create list of tile coordinates', function() {
                 getTile: getTileTest
             };
 
-            printer(params, function(err, image, headers) {
-                assert.equal(err, null);
-                fs.writeFile(__dirname + '/outputs/bbox.' + size + '.png', image, function(err){
-                    assert.equal(err, null);
-                    console.log('\tVisually check image at '+ __dirname + '/outputs/bbox.'+ size +'.png');
+            const { image } = await printer(params);
 
-                    // byte by byte check of image:
-                    checkImage(image, expectedImage);
-                    done();
-                });
-            });
+            writeFile(__dirname + '/outputs/bbox.' + size + '.png', image);
+
+            console.log('\tVisually check image at '+ __dirname + '/outputs/bbox.'+ size +'.png');
+
+            // byte by byte check of image:
+            checkImage(image, expectedImage);
         })
     });
 

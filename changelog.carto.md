@@ -4,6 +4,7 @@
 * Renamed `w` and `h` input center parameters to `width` and `height` respectively.
 * Remove `d3-queue` dependency.
 * Stop computing http-headers.
+* Change public interface from callbacks to promises (async/await)
 
 # 2.0.3-cdb14
 * Update @carto/mapnik to [`3.6.2-carto.13`](https://github.com/CartoDB/node-mapnik/blob/v3.6.2-carto.13/CHANGELOG.carto.md#362-carto13).
