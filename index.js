@@ -27,12 +27,15 @@ async function abaculus (options) {
         abaculus.coordsFromCenter(zoom, scale, options.center, limit, tileSize) :
         // get center coordinates in px from [w,s,e,n] bbox
         abaculus.coordsFromBbox(zoom, scale, options.bbox, limit, tileSize);
+    const { width, height } = center;
 
     // generate list of tile coordinates center
     const coords = abaculus.tileList(zoom, scale, center, tileSize);
 
+    const dimensions = { width, height };
+
     // get tiles based on coordinate list and stitch them together
-    const { image, stats } = await abaculus.stitchTiles(coords, center, format, quality, getTile);
+    const { image, stats } = await abaculus.stitchTiles(coords, dimensions, format, quality, getTile);
 
     return { image, stats };
 }
@@ -106,7 +109,7 @@ abaculus.tileList = function (zoom, scale, center, tileSize) {
             const coord = {
                 column: column,
                 row: row,
-                zoom,
+                zoom
             };
             const point = coordinateToPoint(centerCoordinate, coord, width, height, size);
 
@@ -149,12 +152,10 @@ function coordinateToPoint(centerCoordinate, coord, width, height, tileSize) {
     return point;
 }
 
-abaculus.stitchTiles = async function (coords, center, format, quality, getTile) {
+abaculus.stitchTiles = async function (coords, dimensions, format, quality, getTile) {
     if (!coords) {
         throw new Error('No coords object.');
     }
-
-    const { width, height } = center;
 
     const tiles = await Promise.all(getTiles(coords, getTile));
 
@@ -171,6 +172,7 @@ abaculus.stitchTiles = async function (coords, center, format, quality, getTile)
         renderAvg: Math.round(renderTotal / numTiles)
     };
 
+    const { width, height } = dimensions;
     const options = { format, quality, width, height, reencode: true };
 
     const image = await blend(tiles, options);
