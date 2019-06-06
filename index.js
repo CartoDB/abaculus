@@ -41,46 +41,78 @@ async function abaculus (options) {
 }
 
 abaculus.coordsFromBbox = function (zoom, scale, bbox, limit, tileSize) {
+    const { width, height } = getDimensionsFromBbox(bbox, tileSize, scale, zoom, limit);
+    const { x, y } = getCenterFromBbox(bbox, tileSize, scale, zoom);
+
+    return { width, height, x, y };
+};
+
+function getDimensionsFromBbox (bbox, tileSize, scale, zoom, limit) {
+    const sphericalMercator = new SphericalMercator({ size: tileSize * scale });
+    const bottomLeft = sphericalMercator.px([bbox[0], bbox[1]], zoom);
+    const topRight = sphericalMercator.px([bbox[2], bbox[3]], zoom);
+    let width = topRight[0] - bottomLeft[0];
+    let height = bottomLeft[1] - topRight[1];
+
+    if (width <= 0 || height <= 0) {
+        throw new Error('Incorrect coordinates');
+    }
+
+    width = Math.round(width * scale),
+    height = Math.round(height * scale)
+
+    if (width >= limit || height >= limit) {
+        throw new Error('Desired image is too large.');
+    }
+
+    return { width, height };
+}
+
+function getCenterFromBbox (bbox, tileSize, scale, zoom) {
     const sphericalMercator = new SphericalMercator({ size: tileSize * scale });
     const bottomLeft = sphericalMercator.px([bbox[0], bbox[1]], zoom);
     const topRight = sphericalMercator.px([bbox[2], bbox[3]], zoom);
     const width = topRight[0] - bottomLeft[0];
     const height = bottomLeft[1] - topRight[1];
 
-    if (width <= 0 || height <= 0) {
-        throw new Error('Incorrect coordinates');
-    }
-
-    const coords = {
+    return {
         x: topRight[0] - width / 2,
-        y: topRight[1] + height / 2,
+        y: topRight[1] + height / 2
+    };
+}
+
+abaculus.coordsFromCenter = function (zoom, scale, center, limit, tileSize) {
+    const { width, height } = getDimensionsFromCenter(zoom, scale, center, limit, tileSize);
+    const { x, y } = getCenterFromCenter(zoom, scale, center, tileSize);
+
+    return { width, height, x, y };
+};
+
+function getDimensionsFromCenter (zoom, scale, center, limit, tileSize) {
+    const { x, y, width, height } = center;
+    const sphericalMercator = new SphericalMercator({ size: tileSize * scale });
+    const centerInPx = sphericalMercator.px([x, y], zoom);
+
+    const dimensions = {
         width: Math.round(width * scale),
         height: Math.round(height * scale)
     };
 
-    if (coords.width >= limit || coords.height >= limit) {
+    if (dimensions.width >= limit || dimensions.height >= limit) {
         throw new Error('Desired image is too large.');
     }
 
-    return coords;
-};
+    return dimensions;
+}
 
-abaculus.coordsFromCenter = function (zoom, scale, center, limit, tileSize) {
+function getCenterFromCenter(zoom, scale, center, tileSize) {
     const sphericalMercator = new SphericalMercator({ size: tileSize * scale });
     const centerInPx = sphericalMercator.px([center.x, center.y], zoom);
 
-    const coords = {
+    return {
         x: centerInPx[0],
         y: centerInPx[1],
-        width: Math.round(center.width * scale),
-        height: Math.round(center.height * scale)
     };
-
-    if (coords.width >= limit || coords.height >= limit) {
-        throw new Error('Desired image is too large.');
-    }
-
-    return coords;
 };
 
 // Generate the zxy and px/py offsets needed for each tile in a static image.
