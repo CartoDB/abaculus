@@ -1,7 +1,7 @@
 'use strict';
 
 var assert = require('assert');
-var printer = require('../');
+var printer = require('../lib');
 var fs = require('fs');
 var path = require('path');
 var mapnik = require('@carto/mapnik');
