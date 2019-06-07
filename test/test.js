@@ -98,7 +98,7 @@ describe('get coordinates from center', function() {
 });
 
 describe('create list of tile coordinates', function() {
-    it('should return a tiles object with correct coords', function() {
+    it('should return a valid coordinates object', function() {
         var zoom = 5,
             scale = 4,
             width = 1824,
@@ -107,16 +107,35 @@ describe('create list of tile coordinates', function() {
             dimensions = { width, height };
 
         var expectedCoords = [
-            { z: zoom, x: 15, y: 15, px: -112, py: -108 },
-            { z: zoom, x: 15, y: 16, px: -112, py: 916 },
-            { z: zoom, x: 16, y: 15, px: 912, py: -108 },
-            { z: zoom, x: 16, y: 16, px: 912, py: 916 }
+            { z: zoom, x: 15, y: 15 },
+            { z: zoom, x: 15, y: 16 },
+            { z: zoom, x: 16, y: 15 },
+            { z: zoom, x: 16, y: 16 }
         ];
         var coords = printer.tileList(zoom, scale, center, dimensions, tileSize);
         assert.deepEqual(JSON.stringify(coords), JSON.stringify(expectedCoords));
     });
 
-    it('should return a tiles object with correct coords when image exceeds y coords', function() {
+    it('should return a valid offsets object', function() {
+        var zoom = 5,
+            scale = 4,
+            width = 1824,
+            height = 1832,
+            center = { x: 4096, y: 4096 },
+            dimensions = { width, height };
+
+        var expectedOffsets = [
+            { px: -112, py: -108 },
+            { px: -112, py: 916 },
+            { px: 912, py: -108 },
+            { px: 912, py: 916 }
+        ];
+
+        var offsets = printer.offsetList(zoom, scale, center, dimensions, tileSize);
+        assert.deepEqual(JSON.stringify(offsets), JSON.stringify(expectedOffsets));
+    });
+
+    it('should return a valid coordinates object when image exceeds y coords', function() {
         var zoom = 2,
             scale = 1,
             width = 1000,
@@ -125,33 +144,68 @@ describe('create list of tile coordinates', function() {
             dimensions = { width, height };
 
         var expectedCoords = [
-            { z: zoom, x: 0, y: 0, px: -123, py: -52 },
-            { z: zoom, x: 0, y: 1, px: -123, py: 204 },
-            { z: zoom, x: 0, y: 2, px: -123, py: 460 },
-            { z: zoom, x: 0, y: 3, px: -123, py: 716 },
-            { z: zoom, x: 1, y: 0, px:  133, py: -52 },
-            { z: zoom, x: 1, y: 1, px:  133, py: 204 },
-            { z: zoom, x: 1, y: 2, px:  133, py: 460 },
-            { z: zoom, x: 1, y: 3, px:  133, py: 716 },
-            { z: zoom, x: 2, y: 0, px:  389, py: -52 },
-            { z: zoom, x: 2, y: 1, px:  389, py: 204 },
-            { z: zoom, x: 2, y: 2, px:  389, py: 460 },
-            { z: zoom, x: 2, y: 3, px:  389, py: 716 },
-            { z: zoom, x: 3, y: 0, px:  645, py: -52 },
-            { z: zoom, x: 3, y: 1, px:  645, py: 204 },
-            { z: zoom, x: 3, y: 2, px:  645, py: 460 },
-            { z: zoom, x: 3, y: 3, px:  645, py: 716 },
-            { z: zoom, x: 0, y: 0, px:  901, py: -52 },
-            { z: zoom, x: 0, y: 1, px:  901, py: 204 },
-            { z: zoom, x: 0, y: 2, px:  901, py: 460 },
-            { z: zoom, x: 0, y: 3, px:  901, py: 716 }
+            { z: zoom, x: 0, y: 0 },
+            { z: zoom, x: 0, y: 1 },
+            { z: zoom, x: 0, y: 2 },
+            { z: zoom, x: 0, y: 3 },
+            { z: zoom, x: 1, y: 0 },
+            { z: zoom, x: 1, y: 1 },
+            { z: zoom, x: 1, y: 2 },
+            { z: zoom, x: 1, y: 3 },
+            { z: zoom, x: 2, y: 0 },
+            { z: zoom, x: 2, y: 1 },
+            { z: zoom, x: 2, y: 2 },
+            { z: zoom, x: 2, y: 3 },
+            { z: zoom, x: 3, y: 0 },
+            { z: zoom, x: 3, y: 1 },
+            { z: zoom, x: 3, y: 2 },
+            { z: zoom, x: 3, y: 3 },
+            { z: zoom, x: 0, y: 0 },
+            { z: zoom, x: 0, y: 1 },
+            { z: zoom, x: 0, y: 2 },
+            { z: zoom, x: 0, y: 3 }
         ];
 
         var coords = printer.tileList(zoom, scale, center, dimensions, tileSize);
         assert.deepEqual(JSON.stringify(coords), JSON.stringify(expectedCoords));
     });
 
-    it('should return a tiles object with correct coords when image is much bigger than world', function() {
+    it('should return a valid offsets object when image exceeds y coords', function() {
+        var zoom = 2,
+            scale = 1,
+            width = 1000,
+            height = 1000,
+            center = {x: 623, y: 552 },
+            dimensions = { width, height };
+
+        var expectedOffsets = [
+            { px: -123, py: -52 },
+            { px: -123, py: 204 },
+            { px: -123, py: 460 },
+            { px: -123, py: 716 },
+            { px:  133, py: -52 },
+            { px:  133, py: 204 },
+            { px:  133, py: 460 },
+            { px:  133, py: 716 },
+            { px:  389, py: -52 },
+            { px:  389, py: 204 },
+            { px:  389, py: 460 },
+            { px:  389, py: 716 },
+            { px:  645, py: -52 },
+            { px:  645, py: 204 },
+            { px:  645, py: 460 },
+            { px:  645, py: 716 },
+            { px:  901, py: -52 },
+            { px:  901, py: 204 },
+            { px:  901, py: 460 },
+            { px:  901, py: 716 }
+        ];
+
+        var offsets = printer.offsetList(zoom, scale, center, dimensions, tileSize);
+        assert.deepEqual(JSON.stringify(offsets), JSON.stringify(expectedOffsets));
+    });
+
+    it('should return a valid coordinates object when image is much bigger than world', function() {
         var zoom = 1,
             scale = 1,
             width = 2000,
@@ -160,31 +214,64 @@ describe('create list of tile coordinates', function() {
             dimensions = { width, height };
 
         var expectedCoords = [
-            {z: zoom, x: 0, y: 0, px: -124, py: 950},
-            {z: zoom, x: 0, y: 1, px: -124, py: 1206},
-            {z: zoom, x: 1, y: 0, px: 132, py: 950},
-            {z: zoom, x: 1, y: 1, px: 132, py: 1206},
-            {z: zoom, x: 0, y: 0, px: 388, py: 950},
-            {z: zoom, x: 0, y: 1, px: 388, py: 1206},
-            {z: zoom, x: 1, y: 0, px: 644, py: 950},
-            {z: zoom, x: 1, y: 1, px: 644, py: 1206},
-            {z: zoom, x: 0, y: 0, px: 900, py: 950},
-            {z: zoom, x: 0, y: 1, px: 900, py: 1206},
-            {z: zoom, x: 1, y: 0, px: 1156, py: 950},
-            {z: zoom, x: 1, y: 1, px: 1156, py: 1206},
-            {z: zoom, x: 0, y: 0, px: 1412, py: 950},
-            {z: zoom, x: 0, y: 1, px: 1412, py: 1206},
-            {z: zoom, x: 1, y: 0, px: 1668, py: 950},
-            {z: zoom, x: 1, y: 1, px: 1668, py: 1206},
-            {z: zoom, x: 0, y: 0, px: 1924, py: 950},
-            {z: zoom, x: 0, y: 1, px: 1924, py: 1206}
+            { z: zoom, x: 0, y: 0 },
+            { z: zoom, x: 0, y: 1 },
+            { z: zoom, x: 1, y: 0 },
+            { z: zoom, x: 1, y: 1 },
+            { z: zoom, x: 0, y: 0 },
+            { z: zoom, x: 0, y: 1 },
+            { z: zoom, x: 1, y: 0 },
+            { z: zoom, x: 1, y: 1 },
+            { z: zoom, x: 0, y: 0 },
+            { z: zoom, x: 0, y: 1 },
+            { z: zoom, x: 1, y: 0 },
+            { z: zoom, x: 1, y: 1 },
+            { z: zoom, x: 0, y: 0 },
+            { z: zoom, x: 0, y: 1 },
+            { z: zoom, x: 1, y: 0 },
+            { z: zoom, x: 1, y: 1 },
+            { z: zoom, x: 0, y: 0 },
+            { z: zoom, x: 0, y: 1 }
         ];
 
         var coords = printer.tileList(zoom, scale, center, dimensions, tileSize);
         assert.deepEqual(JSON.stringify(coords), JSON.stringify(expectedCoords));
     });
 
-    it('should return a tiles object with correct coords when image is lower than world', function () {
+    it('should return a valid offsets object when image is much bigger than world', function() {
+        var zoom = 1,
+            scale = 1,
+            width = 2000,
+            height = 2100,
+            center = { x: 100, y: 100 },
+            dimensions = { width, height };
+
+        var expectedOffsets = [
+            { px: -124, py: 950 },
+            { px: -124, py: 1206 },
+            { px: 132, py: 950 },
+            { px: 132, py: 1206 },
+            { px: 388, py: 950 },
+            { px: 388, py: 1206 },
+            { px: 644, py: 950 },
+            { px: 644, py: 1206 },
+            { px: 900, py: 950 },
+            { px: 900, py: 1206 },
+            { px: 1156, py: 950 },
+            { px: 1156, py: 1206 },
+            { px: 1412, py: 950 },
+            { px: 1412, py: 1206 },
+            { px: 1668, py: 950 },
+            { px: 1668, py: 1206 },
+            { px: 1924, py: 950 },
+            { px: 1924, py: 1206 }
+        ];
+
+        var offsets = printer.offsetList(zoom, scale, center, dimensions, tileSize);
+        assert.deepEqual(JSON.stringify(offsets), JSON.stringify(expectedOffsets));
+    });
+
+    it('should return a valid coordinates object when image is smaller than world', function () {
         var zoom = 1,
             scale = 1,
             width = 256,
@@ -193,16 +280,37 @@ describe('create list of tile coordinates', function() {
             dimensions = { width, height };
 
         var expectedCoords = [
-            { z: 1, x: 0, y: 0, px: -128, py: -128 },
-            { z: 1, x: 0, y: 1, px: -128, py: 128 },
-            { z: 1, x: 1, y: 0, px: 128, py: -128 },
-            { z: 1, x: 1, y: 1, px: 128, py: 128 }
+            { z: 1, x: 0, y: 0 },
+            { z: 1, x: 0, y: 1 },
+            { z: 1, x: 1, y: 0 },
+            { z: 1, x: 1, y: 1 }
         ];
 
         var coords = printer.tileList(zoom, scale, center, dimensions, tileSize);
 
         assert.deepEqual(JSON.stringify(coords), JSON.stringify(expectedCoords));
     });
+
+    it('should return a valid offset object when image is smaller than world', function () {
+        var zoom = 1,
+            scale = 1,
+            width = 256,
+            height = 256,
+            center = { x: 256, y: 256 },
+            dimensions = { width, height };
+
+        var expectedOffset = [
+            { px: -128, py: -128 },
+            { px: -128, py: 128 },
+            { px: 128, py: -128 },
+            { px: 128, py: 128 }
+        ];
+
+        var offsets = printer.offsetList(zoom, scale, center, dimensions, tileSize);
+
+        assert.deepEqual(JSON.stringify(offsets), JSON.stringify(expectedOffset));
+    });
+
 });
 
 [256, 512, 1024].forEach(function(size) {
@@ -214,6 +322,13 @@ describe('create list of tile coordinates', function() {
             { z: 1, x: 1, y: 1, px: size, py: size }
         ];
 
+        var offsets = [
+            { px: 0, py: 0 },
+            { px: 0, py: size },
+            { px: size, py: 0 },
+            { px: size, py: size }
+        ]
+
         var center = {
             width: size * 2,
             height: size * 2
@@ -221,7 +336,7 @@ describe('create list of tile coordinates', function() {
 
         it('should fail if no coordinates object', async function () {
             try {
-                await printer.stitchTiles(null, center, format, quality, function() {});
+                await printer.stitchTiles(null, null, center, format, quality, function() {});
                 throw new Error('Should not throw');
             } catch (err) {
                 assert.equal(err.message, 'No coords object.');
@@ -231,7 +346,7 @@ describe('create list of tile coordinates', function() {
         it('should return tiles and stitch them together', async function () {
             var expectedImage = await readFile(path.resolve(__dirname + '/expected/expected.' + size + '.png'));
 
-            const { image } = await printer.stitchTiles(coords, center, format, quality, getTileTest);
+            const { image } = await printer.stitchTiles(coords, offsets, center, format, quality, getTileTest);
 
             await writeFile(__dirname + '/outputs/expected.' + size + '.png', image);
 

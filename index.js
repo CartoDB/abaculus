@@ -33,11 +33,11 @@ async function abaculus (options) {
         abaculus.getDimensionsFromBbox(options.bbox, zoom, scale, tileSize, limit) :
         abaculus.scaleDimensions(options.dimensions, scale, limit);
 
-    // generate list of tile coordinates center
-    const coords = abaculus.tileList(zoom, scale, center, dimensions, tileSize);
+    const coordinates = abaculus.tileList(zoom, scale, center, dimensions, tileSize);
+    const offsets = abaculus.offsetList(zoom, scale, center, dimensions, tileSize);
 
     // get tiles based on coordinate list and stitch them together
-    const { image, stats } = await abaculus.stitchTiles(coords, dimensions, format, quality, getTile);
+    const { image, stats } = await abaculus.stitchTiles(coordinates, offsets, dimensions, format, quality, getTile);
 
     return { image, stats };
 }
@@ -100,78 +100,110 @@ abaculus.getCenterInPixels = function (center, zoom, scale, tileSize) {
     };
 };
 
-// Generate the zxy and px/py offsets needed for each tile in a static image.
-// x, y are center coordinates in pixels
 abaculus.tileList = function (zoom, scale, center, dimensions, tileSize) {
-    const { x, y } = center;
-    const { width, height } = dimensions;
-
-    const size = Math.floor(tileSize * scale);
-
-    const centerCoordinate = {
-        column: x / tileSize,
-        row: y / tileSize,
-        zoom
-    };
-
     const maxTilesInRow = Math.pow(2, zoom);
-    const topLeft = pointToCoordinate(centerCoordinate, { x: 0, y:0 }, width, height, size);
-    const bottomRight = pointToCoordinate(centerCoordinate, { x: width, y: height }, width, height, size);
+
+    return coordinates(zoom, scale, center, dimensions, tileSize).map((coordinate) => {
+        const tileCoordinates = {
+            column: coordinate.x,
+            row: coordinate.y
+        };
+
+        // Wrap tiles with negative coordinates
+        tileCoordinates.column = tileCoordinates.column % maxTilesInRow;
+
+        if (tileCoordinates.column < 0) {
+            tileCoordinates.column = maxTilesInRow + tileCoordinates.column;
+        }
+
+        return {
+            z: zoom,
+            x: tileCoordinates.column,
+            y: tileCoordinates.row
+        };
+    });
+};
+
+abaculus.offsetList = function (zoom, scale, center, dimensions, tileSize) {
+    return coordinates(zoom, scale, center, dimensions, tileSize).map((coordinate) => {
+        const tileCoordinates = {
+            column: coordinate.x,
+            row: coordinate.y
+        };
+
+        const pointOffsetInPixels = getOffsetFromCenterInPixels(center, tileCoordinates, dimensions, tileSize, scale);
+
+        return {
+            px: pointOffsetInPixels.x,
+            py: pointOffsetInPixels.y
+        };
+    });
+};
+
+function coordinates (zoom, scale, center, dimensions, tileSize) {
+    const { width, height } = dimensions;
+    const topLeft = getTileCoordinateFromPointInPixels(center, { x: 0, y:0 }, dimensions, tileSize, scale, zoom);
+    const bottomRight = getTileCoordinateFromPointInPixels(center, { x: width, y: height }, dimensions, tileSize, scale, zoom);
     const coords = [];
 
     for (let column = topLeft.column; column <= bottomRight.column; column++) {
         for (let row = topLeft.row; row <= bottomRight.row; row++) {
-            if (row < 0 || row >= maxTilesInRow) {
-                continue;
-            }
-
-            const coord = {
-                column: column,
-                row: row,
-                zoom
-            };
-            const point = coordinateToPoint(centerCoordinate, coord, width, height, size);
-
-            // Wrap tiles with negative coordinates.
-            coord.column = coord.column % maxTilesInRow;
-
-            if (coord.column < 0) {
-                coord.column = maxTilesInRow + coord.column;
-            }
-
             coords.push({
-                z: coord.zoom,
-                x: coord.column,
-                y: coord.row,
-                px: Math.round(point.x),
-                py: Math.round(point.y)
+                x: column,
+                y: row
             });
         }
     }
 
     return coords;
-};
-
-function pointToCoordinate(centerCoordinate, point, width, height, tileSize) {
-    const coord = {
-        column: Math.floor(centerCoordinate.column + ((point.x - width / 2) / tileSize)),
-        row: Math.floor(centerCoordinate.row + ((point.y - height / 2) / tileSize)),
-        zoom: centerCoordinate.zoom,
-    };
-
-    return coord;
 }
 
-function coordinateToPoint(centerCoordinate, coord, width, height, tileSize) {
-    const point = {
-        x: width / 2 + tileSize * (coord.column - centerCoordinate.column),
-        y: height / 2 + tileSize * (coord.row - centerCoordinate.row)
+function getTileCoordinateFromPointInPixels (center, point, dimensions, tileSize, scale, zoom) {
+    const size = Math.floor(tileSize * scale);
+    const maxTilesInRow = Math.pow(2, zoom);
+    const centerTileCoordinates = pointToTile(center, tileSize);
+
+    const tileCordinateOffset = {
+        column: (point.x - dimensions.width / 2) / size,
+        row: (point.y - dimensions.height / 2) / size
     };
 
-    return point;
+    const tileCoordinate = {
+        column: Math.floor(centerTileCoordinates.column + tileCordinateOffset.column),
+        row: Math.floor(centerTileCoordinates.row + tileCordinateOffset.row)
+    };
+
+    if (tileCoordinate.row < 0) {
+        tileCoordinate.row = 0;
+    }
+
+    if (tileCoordinate.row >= maxTilesInRow) {
+        tileCoordinate.row = maxTilesInRow - 1;
+    }
+
+    return tileCoordinate;
 }
 
-abaculus.stitchTiles = async function (coords, dimensions, format, quality, getTile) {
+function getOffsetFromCenterInPixels (center, tileCoordinates, dimensions, tileSize, scale) {
+    const size = Math.floor(tileSize * scale);
+    const centerTileCoordinates = pointToTile(center, tileSize);
+
+    const offsetInPixels = {
+        x: Math.round(dimensions.width / 2 + size * (tileCoordinates.column - centerTileCoordinates.column)),
+        y: Math.round(dimensions.height / 2 + size * (tileCoordinates.row - centerTileCoordinates.row))
+    };
+
+    return offsetInPixels;
+}
+
+function pointToTile (point, tileSize) {
+    return {
+        column: point.x / tileSize,
+        row: point.y / tileSize
+    };
+}
+
+abaculus.stitchTiles = async function (coords, offsets, dimensions, format, quality, getTile) {
     if (!coords) {
         throw new Error('No coords object.');
     }
@@ -191,10 +223,14 @@ abaculus.stitchTiles = async function (coords, dimensions, format, quality, getT
         renderAvg: Math.round(renderTotal / numTiles)
     };
 
+    const buffers = tiles
+        .map((tile) => tile.buffer)
+        .map((buffer, index) => ({ buffer, x: offsets[index].px, y: offsets[index].py }));
+
     const { width, height } = dimensions;
     const options = { format, quality, width, height, reencode: true };
 
-    const image = await blend(tiles, options);
+    const image = await blend(buffers, options);
 
     return { image, stats };
 };
@@ -202,6 +238,6 @@ abaculus.stitchTiles = async function (coords, dimensions, format, quality, getT
 function getTiles (tileCoords, getTile) {
     const getTilePromisified = promisify(getTile);
 
-    return tileCoords.map(({ z, x, y, px, py }) => getTilePromisified(z, x, y)
-        .then((buffer, headers, stats = {}) => ({ buffer, stats, x: px, y: py })));
+    return tileCoords.map(({ z, x, y }) => getTilePromisified(z, x, y)
+        .then((tile, headers, stats = {}) => ({ buffer: tile, stats })));
 }
