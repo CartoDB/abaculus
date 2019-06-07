@@ -183,6 +183,26 @@ describe('create list of tile coordinates', function() {
         var coords = printer.tileList(zoom, scale, center, dimensions, tileSize);
         assert.deepEqual(JSON.stringify(coords), JSON.stringify(expectedCoords));
     });
+
+    it('should return a tiles object with correct coords when image is lower than world', function () {
+        var zoom = 1,
+            scale = 1,
+            width = 256,
+            height = 256,
+            center = { x: 256, y: 256 },
+            dimensions = { width, height };
+
+        var expectedCoords = [
+            { z: 1, x: 0, y: 0, px: -128, py: -128 },
+            { z: 1, x: 0, y: 1, px: -128, py: 128 },
+            { z: 1, x: 1, y: 0, px: 128, py: -128 },
+            { z: 1, x: 1, y: 1, px: 128, py: 128 }
+        ];
+
+        var coords = printer.tileList(zoom, scale, center, dimensions, tileSize);
+
+        assert.deepEqual(JSON.stringify(coords), JSON.stringify(expectedCoords));
+    });
 });
 
 [256, 512, 1024].forEach(function(size) {
