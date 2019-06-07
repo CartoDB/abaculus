@@ -2,6 +2,7 @@
 
 var assert = require('assert');
 var printer = require('../lib');
+const getCenterInPixels = require('../lib/center');
 var fs = require('fs');
 var path = require('path');
 var mapnik = require('@carto/mapnik');
@@ -44,18 +45,26 @@ describe('Get center from bbox', function() {
         }, /Desired image is too large./);
     });
 
-    it('should return the correct coordinates', function() {
+    it('should return valid dimensions', function() {
         var bbox = [-60, -60, 60, 60];
         var scale = 1;
 
-        const center = printer.getDimensionsFromBbox(bbox, zoom, scale, tileSize, limit);
-        const dimensions = printer.getCenterInPixelsFromBbox(bbox, zoom, scale, tileSize);
+        const dimensions = printer.getDimensionsFromBbox(bbox, zoom, scale, tileSize, limit);
 
-        assert.deepEqual(center.width, 2730);
-        assert.deepEqual(center.height, 3434);
-        assert.deepEqual(dimensions.x, x);
-        assert.deepEqual(dimensions.y, y);
+        assert.deepEqual(dimensions.width, 2730);
+        assert.deepEqual(dimensions.height, 3434);
     });
+
+    it('should return center in pixels from bbox', function() {
+        var bbox = [-60, -60, 60, 60];
+        var scale = 1;
+
+        const center = getCenterInPixels({ bbox, zoom, scale, tileSize });
+
+        assert.deepEqual(center.x, x);
+        assert.deepEqual(center.y, y);
+    });
+
 });
 
 describe('get coordinates from center', function() {
@@ -72,17 +81,20 @@ describe('get coordinates from center', function() {
             printer.scaleDimensions(dimensions, scale, limit);
         }, /Desired image is too large./);
     });
-    it('should return correct origin coords', function() {
+
+    it('should return a valid center point in pixels', function() {
         var scale = 1;
         var center = {
             x: 0,
             y: 20
         };
-        center = printer.getCenterInPixels(center, zoom, scale, tileSize);
+        center = getCenterInPixels({ center, zoom, scale, tileSize });
+
         assert.equal(center.x, x);
         assert.equal(center.y, 3631);
     });
-    it('should return correct origin coords for negative y', function() {
+
+    it('should return a valid center point in pixels for negative y', function() {
         var scale = 1;
         var zoom = 2;
         var center = {
@@ -90,7 +102,7 @@ describe('get coordinates from center', function() {
             y: -14
         };
 
-        center = printer.getCenterInPixels(center, zoom, scale, tileSize);
+        center = getCenterInPixels({ center, zoom, scale, tileSize });
 
         assert.equal(center.x, 623);
         assert.equal(center.y, 552);
