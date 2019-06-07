@@ -335,11 +335,15 @@ describe('create list of tile coordinates', function() {
         }
 
         it('should fail if no coordinates object', async function () {
+            const dimensions = {
+                width: 0,
+                height: 0
+            }
             try {
-                await printer.stitchTiles(null, null, center, format, quality, function() {});
+                printer.tileList(zoom, scale, center, dimensions, tileSize);
                 throw new Error('Should not throw');
             } catch (err) {
-                assert.equal(err.message, 'No coords object.');
+                assert.equal(err.message, 'No coords object');
             };
         });
 

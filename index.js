@@ -155,6 +155,10 @@ function coordinates (zoom, scale, center, dimensions, tileSize) {
         }
     }
 
+    if (!coords.length) {
+        throw new Error('No coords object');
+    }
+
     return coords;
 }
 
@@ -204,16 +208,19 @@ function pointToTile (point, tileSize) {
 }
 
 abaculus.stitchTiles = async function (coords, offsets, dimensions, format, quality, getTile) {
-    if (!coords) {
-        throw new Error('No coords object.');
-    }
-
     const tiles = await Promise.all(getTiles(coords, getTile));
 
     if (!tiles || !tiles.length) {
-        throw new Error('No tiles to stitch.');
+        throw new Error('No tiles to stitch');
     }
 
+    const stats = calculateStats(tiles);
+    const image = await blendTiles(tiles, offsets, dimensions, format, quality);
+
+    return { image, stats };
+};
+
+function calculateStats (tiles) {
     const numTiles = tiles.length;
     const renderTotal = tiles.map(tile => tile.stats.render || 0)
         .reduce((acc, renderTime) => acc + renderTime, 0);
@@ -223,6 +230,10 @@ abaculus.stitchTiles = async function (coords, offsets, dimensions, format, qual
         renderAvg: Math.round(renderTotal / numTiles)
     };
 
+    return stats;
+}
+
+async function blendTiles (tiles, offsets, dimensions, format, quality) {
     const buffers = tiles
         .map((tile) => tile.buffer)
         .map((buffer, index) => ({ buffer, ...offsets[index] }));
@@ -232,8 +243,8 @@ abaculus.stitchTiles = async function (coords, offsets, dimensions, format, qual
 
     const image = await blend(buffers, options);
 
-    return { image, stats };
-};
+    return image;
+}
 
 function getTiles (tileCoords, getTile) {
     const getTilePromisified = promisify(getTile);
