@@ -125,10 +125,10 @@ describe('create list of tile coordinates', function() {
             dimensions = { width, height };
 
         var expectedOffsets = [
-            { px: -112, py: -108 },
-            { px: -112, py: 916 },
-            { px: 912, py: -108 },
-            { px: 912, py: 916 }
+            { x: -112, y: -108 },
+            { x: -112, y: 916 },
+            { x: 912, y: -108 },
+            { x: 912, y: 916 }
         ];
 
         var offsets = printer.offsetList(zoom, scale, center, dimensions, tileSize);
@@ -179,26 +179,26 @@ describe('create list of tile coordinates', function() {
             dimensions = { width, height };
 
         var expectedOffsets = [
-            { px: -123, py: -52 },
-            { px: -123, py: 204 },
-            { px: -123, py: 460 },
-            { px: -123, py: 716 },
-            { px:  133, py: -52 },
-            { px:  133, py: 204 },
-            { px:  133, py: 460 },
-            { px:  133, py: 716 },
-            { px:  389, py: -52 },
-            { px:  389, py: 204 },
-            { px:  389, py: 460 },
-            { px:  389, py: 716 },
-            { px:  645, py: -52 },
-            { px:  645, py: 204 },
-            { px:  645, py: 460 },
-            { px:  645, py: 716 },
-            { px:  901, py: -52 },
-            { px:  901, py: 204 },
-            { px:  901, py: 460 },
-            { px:  901, py: 716 }
+            { x: -123, y: -52 },
+            { x: -123, y: 204 },
+            { x: -123, y: 460 },
+            { x: -123, y: 716 },
+            { x:  133, y: -52 },
+            { x:  133, y: 204 },
+            { x:  133, y: 460 },
+            { x:  133, y: 716 },
+            { x:  389, y: -52 },
+            { x:  389, y: 204 },
+            { x:  389, y: 460 },
+            { x:  389, y: 716 },
+            { x:  645, y: -52 },
+            { x:  645, y: 204 },
+            { x:  645, y: 460 },
+            { x:  645, y: 716 },
+            { x:  901, y: -52 },
+            { x:  901, y: 204 },
+            { x:  901, y: 460 },
+            { x:  901, y: 716 }
         ];
 
         var offsets = printer.offsetList(zoom, scale, center, dimensions, tileSize);
@@ -247,24 +247,24 @@ describe('create list of tile coordinates', function() {
             dimensions = { width, height };
 
         var expectedOffsets = [
-            { px: -124, py: 950 },
-            { px: -124, py: 1206 },
-            { px: 132, py: 950 },
-            { px: 132, py: 1206 },
-            { px: 388, py: 950 },
-            { px: 388, py: 1206 },
-            { px: 644, py: 950 },
-            { px: 644, py: 1206 },
-            { px: 900, py: 950 },
-            { px: 900, py: 1206 },
-            { px: 1156, py: 950 },
-            { px: 1156, py: 1206 },
-            { px: 1412, py: 950 },
-            { px: 1412, py: 1206 },
-            { px: 1668, py: 950 },
-            { px: 1668, py: 1206 },
-            { px: 1924, py: 950 },
-            { px: 1924, py: 1206 }
+            { x: -124, y: 950 },
+            { x: -124, y: 1206 },
+            { x: 132, y: 950 },
+            { x: 132, y: 1206 },
+            { x: 388, y: 950 },
+            { x: 388, y: 1206 },
+            { x: 644, y: 950 },
+            { x: 644, y: 1206 },
+            { x: 900, y: 950 },
+            { x: 900, y: 1206 },
+            { x: 1156, y: 950 },
+            { x: 1156, y: 1206 },
+            { x: 1412, y: 950 },
+            { x: 1412, y: 1206 },
+            { x: 1668, y: 950 },
+            { x: 1668, y: 1206 },
+            { x: 1924, y: 950 },
+            { x: 1924, y: 1206 }
         ];
 
         var offsets = printer.offsetList(zoom, scale, center, dimensions, tileSize);
@@ -300,10 +300,10 @@ describe('create list of tile coordinates', function() {
             dimensions = { width, height };
 
         var expectedOffset = [
-            { px: -128, py: -128 },
-            { px: -128, py: 128 },
-            { px: 128, py: -128 },
-            { px: 128, py: 128 }
+            { x: -128, y: -128 },
+            { x: -128, y: 128 },
+            { x: 128, y: -128 },
+            { x: 128, y: 128 }
         ];
 
         var offsets = printer.offsetList(zoom, scale, center, dimensions, tileSize);
@@ -316,17 +316,17 @@ describe('create list of tile coordinates', function() {
 [256, 512, 1024].forEach(function(size) {
     describe('stitch tiles into single png', function() {
         var coords = [
-            { z: 1, x: 0, y: 0, px: 0, py: 0 },
-            { z: 1, x: 0, y: 1, px: 0, py: size },
-            { z: 1, x: 1, y: 0, px: size, py: 0 },
-            { z: 1, x: 1, y: 1, px: size, py: size }
+            { z: 1, x: 0, y: 0 },
+            { z: 1, x: 0, y: 1 },
+            { z: 1, x: 1, y: 0 },
+            { z: 1, x: 1, y: 1 }
         ];
 
         var offsets = [
-            { px: 0, py: 0 },
-            { px: 0, py: size },
-            { px: size, py: 0 },
-            { px: size, py: size }
+            { x: 0, y: 0 },
+            { x: 0, y: size },
+            { x: size, y: 0 },
+            { x: size, y: size }
         ]
 
         var center = {

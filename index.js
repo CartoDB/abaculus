@@ -134,8 +134,8 @@ abaculus.offsetList = function (zoom, scale, center, dimensions, tileSize) {
         const pointOffsetInPixels = getOffsetFromCenterInPixels(center, tileCoordinates, dimensions, tileSize, scale);
 
         return {
-            px: pointOffsetInPixels.x,
-            py: pointOffsetInPixels.y
+            x: pointOffsetInPixels.x,
+            y: pointOffsetInPixels.y
         };
     });
 };
@@ -225,7 +225,7 @@ abaculus.stitchTiles = async function (coords, offsets, dimensions, format, qual
 
     const buffers = tiles
         .map((tile) => tile.buffer)
-        .map((buffer, index) => ({ buffer, x: offsets[index].px, y: offsets[index].py }));
+        .map((buffer, index) => ({ buffer, ...offsets[index] }));
 
     const { width, height } = dimensions;
     const options = { format, quality, width, height, reencode: true };
