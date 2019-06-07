@@ -3,6 +3,7 @@
 var assert = require('assert');
 var printer = require('../lib');
 const getCenterInPixels = require('../lib/center');
+const getDimensions = require('../lib/dimensions');
 var fs = require('fs');
 var path = require('path');
 var mapnik = require('@carto/mapnik');
@@ -32,7 +33,7 @@ describe('Get center from bbox', function() {
         var bbox = [0, 0, 0, 0];
 
         assert.throws( function() {
-            printer.getDimensionsFromBbox(bbox, zoom, scale, tileSize, limit);
+            getDimensions({ bbox, zoom, scale, tileSize, limit });
         }, /Incorrect coordinates/);
     });
     it('should fail if the image is too large', function() {
@@ -41,7 +42,7 @@ describe('Get center from bbox', function() {
         const scale = 2;
 
         assert.throws( function() {
-            printer.getDimensionsFromBbox(bbox, zoom, scale, tileSize, limit);
+            getDimensions({ bbox, zoom, scale, tileSize, limit });
         }, /Desired image is too large./);
     });
 
@@ -49,7 +50,7 @@ describe('Get center from bbox', function() {
         var bbox = [-60, -60, 60, 60];
         var scale = 1;
 
-        const dimensions = printer.getDimensionsFromBbox(bbox, zoom, scale, tileSize, limit);
+        const dimensions = getDimensions({ bbox, zoom, scale, tileSize, limit });
 
         assert.deepEqual(dimensions.width, 2730);
         assert.deepEqual(dimensions.height, 3434);
@@ -78,7 +79,7 @@ describe('get coordinates from center', function() {
             height: 4752
         };
         assert.throws(function () {
-            printer.scaleDimensions(dimensions, scale, limit);
+            getDimensions({ dimensions, scale, limit });
         }, /Desired image is too large./);
     });
 
