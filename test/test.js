@@ -4,6 +4,8 @@ var assert = require('assert');
 var printer = require('../lib');
 const getCenterInPixels = require('../lib/center');
 const getDimensions = require('../lib/dimensions');
+const getTileList = require('../lib/tiles');
+const getOffsetList = require('../lib/offsets');
 var fs = require('fs');
 var path = require('path');
 var mapnik = require('@carto/mapnik');
@@ -125,7 +127,7 @@ describe('create list of tile coordinates', function() {
             { z: zoom, x: 16, y: 15 },
             { z: zoom, x: 16, y: 16 }
         ];
-        var coords = printer.tileList(zoom, scale, center, dimensions, tileSize);
+        var coords = getTileList({ zoom, scale, center, dimensions, tileSize });
         assert.deepEqual(JSON.stringify(coords), JSON.stringify(expectedCoords));
     });
 
@@ -144,7 +146,7 @@ describe('create list of tile coordinates', function() {
             { x: 912, y: 916 }
         ];
 
-        var offsets = printer.offsetList(zoom, scale, center, dimensions, tileSize);
+        var offsets = getOffsetList({ zoom, scale, center, dimensions, tileSize });
         assert.deepEqual(JSON.stringify(offsets), JSON.stringify(expectedOffsets));
     });
 
@@ -179,7 +181,7 @@ describe('create list of tile coordinates', function() {
             { z: zoom, x: 0, y: 3 }
         ];
 
-        var coords = printer.tileList(zoom, scale, center, dimensions, tileSize);
+        var coords = getTileList({ zoom, scale, center, dimensions, tileSize });
         assert.deepEqual(JSON.stringify(coords), JSON.stringify(expectedCoords));
     });
 
@@ -214,7 +216,7 @@ describe('create list of tile coordinates', function() {
             { x:  901, y: 716 }
         ];
 
-        var offsets = printer.offsetList(zoom, scale, center, dimensions, tileSize);
+        var offsets = getOffsetList({ zoom, scale, center, dimensions, tileSize });
         assert.deepEqual(JSON.stringify(offsets), JSON.stringify(expectedOffsets));
     });
 
@@ -247,7 +249,7 @@ describe('create list of tile coordinates', function() {
             { z: zoom, x: 0, y: 1 }
         ];
 
-        var coords = printer.tileList(zoom, scale, center, dimensions, tileSize);
+        var coords = getTileList({ zoom, scale, center, dimensions, tileSize });
         assert.deepEqual(JSON.stringify(coords), JSON.stringify(expectedCoords));
     });
 
@@ -280,7 +282,7 @@ describe('create list of tile coordinates', function() {
             { x: 1924, y: 1206 }
         ];
 
-        var offsets = printer.offsetList(zoom, scale, center, dimensions, tileSize);
+        var offsets = getOffsetList({ zoom, scale, center, dimensions, tileSize });
         assert.deepEqual(JSON.stringify(offsets), JSON.stringify(expectedOffsets));
     });
 
@@ -299,7 +301,7 @@ describe('create list of tile coordinates', function() {
             { z: 1, x: 1, y: 1 }
         ];
 
-        var coords = printer.tileList(zoom, scale, center, dimensions, tileSize);
+        var coords = getTileList({ zoom, scale, center, dimensions, tileSize });
 
         assert.deepEqual(JSON.stringify(coords), JSON.stringify(expectedCoords));
     });
@@ -319,7 +321,7 @@ describe('create list of tile coordinates', function() {
             { x: 128, y: 128 }
         ];
 
-        var offsets = printer.offsetList(zoom, scale, center, dimensions, tileSize);
+        var offsets = getOffsetList({ zoom, scale, center, dimensions, tileSize });
 
         assert.deepEqual(JSON.stringify(offsets), JSON.stringify(expectedOffset));
     });
@@ -347,13 +349,14 @@ describe('create list of tile coordinates', function() {
             height: size * 2
         }
 
-        it('should fail if no coordinates object', async function () {
+        it('should fail when no tiles', async function () {
             const dimensions = {
                 width: 0,
                 height: 0
             }
+
             try {
-                printer.tileList(zoom, scale, center, dimensions, tileSize);
+                getTileList({ zoom, scale, center, dimensions, tileSize });
                 throw new Error('Should not throw');
             } catch (err) {
                 assert.equal(err.message, 'No coords object');
