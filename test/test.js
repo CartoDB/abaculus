@@ -6,6 +6,7 @@ const getCenterInPixels = require('../lib/center');
 const getDimensions = require('../lib/dimensions');
 const getTileList = require('../lib/tiles');
 const getOffsetList = require('../lib/offsets');
+const blend = require('../lib/blend');
 var fs = require('fs');
 var path = require('path');
 var mapnik = require('@carto/mapnik');
@@ -366,7 +367,7 @@ describe('create list of tile coordinates', function() {
         it('should return tiles and stitch them together', async function () {
             var expectedImage = await readFile(path.resolve(__dirname + '/expected/expected.' + size + '.png'));
 
-            const { image } = await printer.stitchTiles(coords, offsets, center, format, quality, getTileTest);
+            const { image } = await blend({ coordinates: coords, offsets, dimensions: center, format, quality, getTile: getTileTest });
 
             await writeFile(__dirname + '/outputs/expected.' + size + '.png', image);
 
