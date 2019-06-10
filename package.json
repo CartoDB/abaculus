@@ -1,6 +1,6 @@
 {
   "name": "abaculus",
-  "version": "2.0.3-cdb15",
+  "version": "2.0.3-cdb16",
   "description": "stitches map tiles together for high-res exporting from tm2",
   "main": "lib/index.js",
   "contributors": [
